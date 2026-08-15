@@ -3,17 +3,26 @@
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, nowdate
+from frappe.utils import cint, getdate, nowdate
 
 
 class Truck(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_single_truck_per_driver()
+		self.validate_driver_required_when_active()
 
 	def validate_dates(self):
 		if self.purchase_date and getdate(self.purchase_date) > getdate(nowdate()):
 			frappe.throw("Purchase Date cannot be in the future")
+
+		if self.year_of_manufacture:
+			current_year = getdate(nowdate()).year
+			if cint(self.year_of_manufacture) > current_year:
+				frappe.throw(
+					f"Year of Manufacture ({self.year_of_manufacture}) cannot be after the "
+					f"current year ({current_year})."
+				)
 
 	def validate_single_truck_per_driver(self):
 		if not self.assigned_driver:
@@ -32,6 +41,15 @@ class Truck(Document):
 				f"Driver {self.assigned_driver} is already assigned to Truck {existing}. "
 				"A driver can only be assigned to one truck at a time — unassign them from "
 				"that truck first."
+			)
+
+	def validate_driver_required_when_active(self):
+		"""A truck can't be put into active service (i.e. assigned to work)
+		without a driver assigned to it."""
+		if self.status == "Active" and not self.assigned_driver:
+			frappe.throw(
+				"Truck cannot be set to Active without an Assigned Driver. "
+				"Either assign a driver, or set Status to Idle/Under Maintenance."
 			)
 
 	def on_trash(self):

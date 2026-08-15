@@ -2,6 +2,12 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on("Truck", {
+	status(frm) {
+		if (frm.doc.status === "Active" && !frm.doc.assigned_driver) {
+			frappe.msgprint(__("A driver must be assigned before this truck can be set to Active."));
+		}
+	},
+
 	refresh(frm) {
 		if (!frm.is_new()) {
 			frm.add_custom_button("Cost Analysis", () => {
