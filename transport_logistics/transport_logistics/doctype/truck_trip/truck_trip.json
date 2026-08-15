@@ -14,6 +14,7 @@
   "company",
   "customer",
   "sales_order",
+  "delivery_note",
   "section_break_route",
   "origin",
   "destination",
@@ -29,6 +30,12 @@
   "column_break_offload",
   "offload_odometer",
   "offloaded_by",
+  "delivery_number",
+  "proof_of_delivery",
+  "section_break_pod_auth",
+  "pod_authenticated",
+  "pod_authenticated_by",
+  "pod_authenticated_on",
   "remarks"
  ],
  "fields": [
@@ -96,6 +103,14 @@
    "label": "Sales Order",
    "options": "Sales Order",
    "description": "If this haulage is against a Sales Order for the customer, link it here to auto-fill Revenue Earned from its Grand Total. Leave blank and enter Revenue manually if there's no Sales Order."
+  },
+  {
+   "fieldname": "delivery_note",
+   "fieldtype": "Link",
+   "label": "Delivery Note",
+   "options": "Delivery Note",
+   "description": "Generated automatically from the linked Sales Order when this trip starts (status set to Ongoing), the same way a normal Sales flow produces a Delivery Note. Leave blank to have it auto-created, or link an existing submitted Delivery Note yourself (e.g. for a partial shipment). Locked once set, and the Delivery Number captured at offload must match it.",
+   "mandatory_depends_on": "eval:doc.status==\"Ongoing\" || doc.status==\"Completed\""
   },
   {
    "fieldname": "section_break_route",
@@ -180,13 +195,58 @@
    "fieldname": "offload_odometer",
    "fieldtype": "Float",
    "label": "Odometer At Offload (Km)",
-   "read_only": 1
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
   },
   {
    "fieldname": "offloaded_by",
    "fieldtype": "Link",
    "label": "Offload Confirmed By",
    "options": "Employee",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+  },
+  {
+   "fieldname": "delivery_number",
+   "fieldtype": "Data",
+   "label": "Delivery Number",
+   "description": "Must match the Delivery Note recorded above (the document issued to the driver when the trip started) - transcribe it from the physical document in hand at offload. A mismatch is rejected: it means the driver is not returning proof against the original delivery.",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+  },
+  {
+   "fieldname": "proof_of_delivery",
+   "fieldtype": "Attach",
+   "label": "Proof of Delivery",
+   "description": "Signed delivery note / POD document confirming the client received the load. Required before a trip can be marked Offloaded.",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+  },
+  {
+   "fieldname": "section_break_pod_auth",
+   "fieldtype": "Section Break",
+   "label": "POD Authentication",
+   "depends_on": "eval:doc.offload_status==\"Offloaded\""
+  },
+  {
+   "fieldname": "pod_authenticated",
+   "fieldtype": "Check",
+   "label": "Proof of Delivery Authenticated",
+   "default": "0",
+   "read_only": 1,
+   "description": "Set only via the 'Authenticate Proof of Delivery' action by an authorized user (Transport Manager) who has independently verified the scanned document and Delivery Number against the physical/client records. Cannot be set by the person who performed the offload."
+  },
+  {
+   "fieldname": "pod_authenticated_by",
+   "fieldtype": "Link",
+   "label": "Authenticated By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "pod_authenticated_on",
+   "fieldtype": "Datetime",
+   "label": "Authenticated On",
    "read_only": 1
   },
   {
