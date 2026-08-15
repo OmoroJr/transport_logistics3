@@ -1,0 +1,30 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "document_type",
+  "status",
+  "reference_no",
+  "received_date",
+  "attachment"
+ ],
+ "fields": [
+  {"fieldname": "document_type", "fieldtype": "Select", "label": "Document Type", "options": "Bill of Lading / AWB\nCommercial Invoice\nPacking List\nCertificate of Origin\nIDF (Import Declaration Form)\nCertificate of Conformity\nCustoms Entry\nRelease Order\nDelivery Note\nOther", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "status", "fieldtype": "Select", "label": "Status", "options": "Pending\nReceived\nNot Applicable", "default": "Pending", "in_list_view": 1},
+  {"fieldname": "reference_no", "fieldtype": "Data", "label": "Reference No", "in_list_view": 1},
+  {"fieldname": "received_date", "fieldtype": "Date", "label": "Received Date", "in_list_view": 1},
+  {"fieldname": "attachment", "fieldtype": "Attach", "label": "Attachment"}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Shipment Document",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,365 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_gl",
+  "enable_gl_posting",
+  "default_cost_center",
+  "default_payment_account",
+  "column_break_gl",
+  "fuel_expense_account",
+  "maintenance_expense_account",
+  "tyre_expense_account",
+  "other_expense_account",
+  "accident_expense_account",
+  "section_alerts",
+  "expiry_alert_days_before",
+  "notify_role",
+  "section_driver_pay",
+  "driver_payment_expense_account",
+  "column_break_driver_pay",
+  "cash_account",
+  "mpesa_account",
+  "section_mpesa_b2c",
+  "enable_mpesa_b2c",
+  "mpesa_environment",
+  "mpesa_shortcode",
+  "mpesa_initiator_name",
+  "column_break_mpesa_b2c",
+  "mpesa_consumer_key",
+  "mpesa_consumer_secret",
+  "mpesa_security_credential",
+  "section_mpesa_urls",
+  "mpesa_result_url",
+  "mpesa_queue_timeout_url",
+  "section_workshop",
+  "default_workshop_warehouse",
+  "column_break_workshop",
+  "default_labour_rate",
+  "fuel_stock_asset_account",
+  "section_cf",
+  "cf_billing_item",
+  "section_gps",
+  "enable_gps_tracking",
+  "gps_provider",
+  "gps_server_url",
+  "column_break_gps",
+  "gps_username",
+  "gps_password",
+  "section_gps_safety",
+  "gps_odometer_jump_limit_km"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_gl",
+   "fieldtype": "Section Break",
+   "label": "GL Posting (Optional)"
+  },
+  {
+   "fieldname": "enable_gl_posting",
+   "fieldtype": "Check",
+   "label": "Post Costs to General Ledger",
+   "default": "0",
+   "description": "When enabled, submitting a Fuel Log, Maintenance Log, Truck Expense, or Tyre Retread will automatically create and submit a Journal Entry."
+  },
+  {
+   "fieldname": "default_cost_center",
+   "fieldtype": "Link",
+   "label": "Default Cost Center",
+   "options": "Cost Center"
+  },
+  {
+   "fieldname": "default_payment_account",
+   "fieldtype": "Link",
+   "label": "Default Payment/Credit Account",
+   "options": "Account",
+   "description": "e.g. Cash, Bank, or a Creditors account. This is credited on every auto-posted entry."
+  },
+  {
+   "fieldname": "column_break_gl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fuel_expense_account",
+   "fieldtype": "Link",
+   "label": "Fuel Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "maintenance_expense_account",
+   "fieldtype": "Link",
+   "label": "Maintenance Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "tyre_expense_account",
+   "fieldtype": "Link",
+   "label": "Tyre Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "other_expense_account",
+   "fieldtype": "Link",
+   "label": "Other Truck Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "accident_expense_account",
+   "fieldtype": "Link",
+   "label": "Accident/Repair Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "section_alerts",
+   "fieldtype": "Section Break",
+   "label": "Compliance Expiry Alerts"
+  },
+  {
+   "fieldname": "expiry_alert_days_before",
+   "fieldtype": "Int",
+   "label": "Alert Days Before Expiry",
+   "default": "30",
+   "description": "Daily background job checks Insurance/License/Inspection/COMESA expiry dates on all active Trucks and notifies this many days in advance."
+  },
+  {
+   "fieldname": "notify_role",
+   "fieldtype": "Link",
+   "label": "Notify Role",
+   "options": "Role",
+   "default": "Transport Manager"
+  },
+  {
+   "fieldname": "section_driver_pay",
+   "fieldtype": "Section Break",
+   "label": "Driver Mileage Payment"
+  },
+  {
+   "fieldname": "driver_payment_expense_account",
+   "fieldtype": "Link",
+   "label": "Driver Payment Expense Account",
+   "options": "Account"
+  },
+  {
+   "fieldname": "column_break_driver_pay",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cash_account",
+   "fieldtype": "Link",
+   "label": "Cash Account (for Cash payments)",
+   "options": "Account"
+  },
+  {
+   "fieldname": "mpesa_account",
+   "fieldtype": "Link",
+   "label": "M-Pesa Account (for M-Pesa payments)",
+   "options": "Account",
+   "description": "The ledger account representing your M-Pesa till/paybill float."
+  },
+  {
+   "fieldname": "section_mpesa_b2c",
+   "fieldtype": "Section Break",
+   "label": "M-Pesa B2C Integration (Optional, Advanced)"
+  },
+  {
+   "fieldname": "enable_mpesa_b2c",
+   "fieldtype": "Check",
+   "label": "Enable Live M-Pesa B2C Disbursement",
+   "default": "0",
+   "description": "Requires Safaricom Daraja B2C API access approved for your shortcode, and a Security Credential generated via the Daraja portal. Leave off to just record M-Pesa payments manually (transaction code field)."
+  },
+  {
+   "fieldname": "mpesa_environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nProduction",
+   "default": "Sandbox",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "mpesa_shortcode",
+   "fieldtype": "Data",
+   "label": "B2C Shortcode",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "mpesa_initiator_name",
+   "fieldtype": "Data",
+   "label": "Initiator Name",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "column_break_mpesa_b2c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "mpesa_consumer_key",
+   "fieldtype": "Data",
+   "label": "Consumer Key",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "mpesa_consumer_secret",
+   "fieldtype": "Password",
+   "label": "Consumer Secret",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "mpesa_security_credential",
+   "fieldtype": "Password",
+   "label": "Security Credential",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "section_mpesa_urls",
+   "fieldtype": "Section Break",
+   "label": "Callback URLs",
+   "depends_on": "eval:doc.enable_mpesa_b2c"
+  },
+  {
+   "fieldname": "mpesa_result_url",
+   "fieldtype": "Data",
+   "label": "Result URL",
+   "depends_on": "eval:doc.enable_mpesa_b2c",
+   "description": "https://your-site/api/method/transport_logistics.transport_logistics.mpesa.b2c_result_callback"
+  },
+  {
+   "fieldname": "mpesa_queue_timeout_url",
+   "fieldtype": "Data",
+   "label": "Queue Timeout URL",
+   "depends_on": "eval:doc.enable_mpesa_b2c",
+   "description": "https://your-site/api/method/transport_logistics.transport_logistics.mpesa.b2c_timeout_callback"
+  },
+  {
+   "fieldname": "section_workshop",
+   "fieldtype": "Section Break",
+   "label": "Workshop"
+  },
+  {
+   "fieldname": "default_workshop_warehouse",
+   "fieldtype": "Link",
+   "label": "Default Workshop Warehouse",
+   "options": "Warehouse",
+   "description": "Spare parts are issued from this warehouse when a Workshop Job Card is completed. Leave blank to skip stock movement and only track cost."
+  },
+  {
+   "fieldname": "column_break_workshop",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_labour_rate",
+   "fieldtype": "Currency",
+   "label": "Default Labour Rate (per Hour)"
+  },
+  {
+   "fieldname": "fuel_stock_asset_account",
+   "fieldtype": "Link",
+   "label": "Fuel Stock Asset Account",
+   "options": "Account",
+   "description": "Used for bulk fuel purchase/dispensing GL postings. WARNING: if your Company already has Perpetual Inventory accounting enabled for the fuel Item, do NOT also enable GL posting here for Bulk Fuel Purchase/Fuel Dispensing \u2014 ERPNext's own Stock Entry accounting would already post these, and enabling both will double-count. Choose one."
+  },
+  {
+   "fieldname": "section_cf",
+   "fieldtype": "Section Break",
+   "label": "Clearing & Forwarding"
+  },
+  {
+   "fieldname": "cf_billing_item",
+   "fieldtype": "Link",
+   "label": "Clearing & Forwarding Billing Item",
+   "options": "Item",
+   "description": "A generic service Item (e.g. 'Clearing & Forwarding Services') used as the line item when generating a Sales Invoice from a Shipment's billable charges \u2014 ERPNext requires every invoice line to reference a real Item."
+  },
+  {
+   "fieldname": "section_gps",
+   "fieldtype": "Section Break",
+   "label": "GPS Tracking Integration"
+  },
+  {
+   "fieldname": "enable_gps_tracking",
+   "fieldtype": "Check",
+   "label": "Enable Live GPS Sync",
+   "default": "0",
+   "description": "Pulls live positions from your GPS tracking platform on a schedule and updates each enabled Truck's location and odometer. Also turn on 'Track this Truck via GPS' on the individual Truck records you want synced."
+  },
+  {
+   "fieldname": "gps_provider",
+   "fieldtype": "Select",
+   "label": "Provider",
+   "options": "Traccar",
+   "default": "Traccar",
+   "depends_on": "eval:doc.enable_gps_tracking",
+   "description": "Traccar is a free, self-hosted (or cloud) GPS tracking platform (traccar.org) that speaks the protocol used by most GPS/GSM tracker hardware. If you use a different platform, its REST API can be wired in the same way \u2014 ask your developer."
+  },
+  {
+   "fieldname": "gps_server_url",
+   "fieldtype": "Data",
+   "label": "Server URL",
+   "depends_on": "eval:doc.enable_gps_tracking",
+   "mandatory_depends_on": "eval:doc.enable_gps_tracking",
+   "description": "Base URL of your Traccar server, no trailing slash. e.g. https://track.yourcompany.com"
+  },
+  {
+   "fieldname": "column_break_gps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gps_username",
+   "fieldtype": "Data",
+   "label": "Username",
+   "depends_on": "eval:doc.enable_gps_tracking",
+   "mandatory_depends_on": "eval:doc.enable_gps_tracking"
+  },
+  {
+   "fieldname": "gps_password",
+   "fieldtype": "Password",
+   "label": "Password",
+   "depends_on": "eval:doc.enable_gps_tracking",
+   "mandatory_depends_on": "eval:doc.enable_gps_tracking"
+  },
+  {
+   "fieldname": "section_gps_safety",
+   "fieldtype": "Section Break",
+   "label": "GPS Odometer Safety",
+   "depends_on": "eval:doc.enable_gps_tracking"
+  },
+  {
+   "fieldname": "gps_odometer_jump_limit_km",
+   "fieldtype": "Float",
+   "label": "Reject Odometer Jump Above (Km)",
+   "default": "1000",
+   "description": "If a device's odometer reading jumps by more than this many Km since the last sync, it is treated as a device glitch/reset and ignored (logged to Error Log) rather than applied to the Truck. The odometer is also never allowed to move backward."
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Transport Logistics Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

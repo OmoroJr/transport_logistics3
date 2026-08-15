@@ -1,0 +1,20 @@
+{
+ "color": "#C0392B",
+ "creation": "2026-01-01 00:00:00",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Driver Mileage Payment",
+ "filters_json": "[[\"Driver Mileage Payment\", \"payment_status\", \"=\", \"Unpaid\"]]",
+ "function": "Count",
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Unpaid Driver Payments",
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Unpaid Driver Payments",
+ "owner": "Administrator",
+ "report_function": "Count",
+ "show_percentage_stats": 0,
+ "type": "Document Type"
+}

@@ -1,0 +1,28 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "route",
+  "number_of_trips",
+  "rate",
+  "amount"
+ ],
+ "fields": [
+  {"fieldname": "route", "fieldtype": "Link", "label": "Route", "options": "Route", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "number_of_trips", "fieldtype": "Int", "label": "No. of Trips", "reqd": 1, "default": "1", "in_list_view": 1},
+  {"fieldname": "rate", "fieldtype": "Currency", "label": "Rate per Trip", "fetch_from": "route.driver_rate", "fetch_if_empty": 1, "in_list_view": 1},
+  {"fieldname": "amount", "fieldtype": "Currency", "label": "Amount", "read_only": 1, "in_list_view": 1}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Driver Mileage Payment Route",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

@@ -1,0 +1,293 @@
+{
+ "actions": [],
+ "autoname": "format:JC-{truck}-{#####}",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "truck",
+  "trailer",
+  "job_type",
+  "status",
+  "column_break_1",
+  "company",
+  "workshop",
+  "bay",
+  "date_opened",
+  "date_closed",
+  "technician",
+  "section_break_desc",
+  "complaint",
+  "diagnosis",
+  "work_done",
+  "section_break_labour",
+  "labour_hours",
+  "labour_rate",
+  "column_break_labour",
+  "labour_cost",
+  "section_break_parts",
+  "warehouse",
+  "items",
+  "column_break_parts_total",
+  "parts_cost",
+  "section_break_totals",
+  "other_cost",
+  "column_break_totals",
+  "total_cost",
+  "section_break_links",
+  "maintenance_log",
+  "stock_entry",
+  "odometer_reading"
+ ],
+ "fields": [
+  {
+   "fieldname": "truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "trailer",
+   "fieldtype": "Link",
+   "label": "Trailer (if attached)",
+   "options": "Trailer",
+   "fetch_from": "truck.current_trailer",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "job_type",
+   "fieldtype": "Select",
+   "label": "Job Type",
+   "options": "Scheduled Service\nRepair\nBreakdown\nInspection\nAccident Repair",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nIn Progress\nAwaiting Parts\nCompleted\nCancelled",
+   "default": "Open",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "truck.company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "workshop",
+   "fieldtype": "Link",
+   "label": "Workshop / Garage",
+   "options": "Workshop",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Leave blank for ad-hoc work not tied to a specific workshop. If a Workshop with a bay limit is set, this job can't be opened once every bay there is already occupied."
+  },
+  {
+   "fieldname": "bay",
+   "fieldtype": "Data",
+   "label": "Bay / Slot"
+  },
+  {
+   "fieldname": "date_opened",
+   "fieldtype": "Date",
+   "label": "Date Opened",
+   "default": "Today",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_closed",
+   "fieldtype": "Date",
+   "label": "Date Closed"
+  },
+  {
+   "fieldname": "technician",
+   "fieldtype": "Link",
+   "label": "Technician / Mechanic",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "section_break_desc",
+   "fieldtype": "Section Break",
+   "label": "Complaint & Work Done"
+  },
+  {
+   "fieldname": "complaint",
+   "fieldtype": "Small Text",
+   "label": "Complaint / Reported Issue"
+  },
+  {
+   "fieldname": "diagnosis",
+   "fieldtype": "Small Text",
+   "label": "Diagnosis"
+  },
+  {
+   "fieldname": "work_done",
+   "fieldtype": "Small Text",
+   "label": "Work Done"
+  },
+  {
+   "fieldname": "section_break_labour",
+   "fieldtype": "Section Break",
+   "label": "Labour"
+  },
+  {
+   "fieldname": "labour_hours",
+   "fieldtype": "Float",
+   "label": "Labour Hours"
+  },
+  {
+   "fieldname": "labour_rate",
+   "fieldtype": "Currency",
+   "label": "Labour Rate (per Hour)"
+  },
+  {
+   "fieldname": "column_break_labour",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "labour_cost",
+   "fieldtype": "Currency",
+   "label": "Labour Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_parts",
+   "fieldtype": "Section Break",
+   "label": "Spare Parts Used"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Issue Parts From Warehouse",
+   "options": "Warehouse",
+   "description": "Leave blank to skip stock movement and only track cost."
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Parts",
+   "options": "Workshop Job Card Item"
+  },
+  {
+   "fieldname": "column_break_parts_total",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "parts_cost",
+   "fieldtype": "Currency",
+   "label": "Parts Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_totals",
+   "fieldtype": "Section Break",
+   "label": "Totals"
+  },
+  {
+   "fieldname": "other_cost",
+   "fieldtype": "Currency",
+   "label": "Other Cost"
+  },
+  {
+   "fieldname": "column_break_totals",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "label": "Total Job Cost",
+   "read_only": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "section_break_links",
+   "fieldtype": "Section Break",
+   "label": "Links (auto-filled on completion)"
+  },
+  {
+   "fieldname": "maintenance_log",
+   "fieldtype": "Link",
+   "label": "Truck Maintenance Log",
+   "options": "Truck Maintenance Log",
+   "read_only": 1,
+   "description": "Auto-created on submit so this job's cost flows into Truck Cost Analysis and optional GL posting, exactly like a manually logged maintenance entry."
+  },
+  {
+   "fieldname": "stock_entry",
+   "fieldtype": "Link",
+   "label": "Stock Entry (Parts Issued)",
+   "options": "Stock Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "odometer_reading",
+   "fieldtype": "Float",
+   "label": "Odometer Reading At Job (Km)"
+  }
+ ],
+ "is_submittable": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Workshop Job Card",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

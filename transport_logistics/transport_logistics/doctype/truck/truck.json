@@ -1,0 +1,346 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:truck_no",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "document_type": "Setup",
+ "engine": "InnoDB",
+ "field_order": [
+  "truck_no",
+  "registration_number",
+  "status",
+  "column_break_1",
+  "company",
+  "assigned_driver",
+  "section_break_specs",
+  "make",
+  "model",
+  "year_of_manufacture",
+  "column_break_specs",
+  "chassis_no",
+  "engine_no",
+  "fuel_type",
+  "tank_capacity_litres",
+  "section_break_odo",
+  "current_odometer",
+  "column_break_odo",
+  "load_capacity_tonnes",
+  "section_break_fin",
+  "purchase_date",
+  "purchase_cost",
+  "depreciation_rate_percent",
+  "column_break_fin",
+  "salvage_value",
+  "section_break_docs",
+  "insurance_expiry_date",
+  "license_expiry_date",
+  "column_break_docs",
+  "inspection_expiry_date",
+  "comesa_expiry_date",
+  "section_break_img",
+  "image",
+  "remarks",
+  "current_trailer",
+  "section_break_gps",
+  "enable_gps_tracking",
+  "gps_device_id",
+  "column_break_gps",
+  "last_latitude",
+  "last_longitude",
+  "last_gps_speed_kmh",
+  "last_gps_update",
+  "gps_location"
+ ],
+ "fields": [
+  {
+   "fieldname": "truck_no",
+   "fieldtype": "Data",
+   "label": "Truck No",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "registration_number",
+   "fieldtype": "Data",
+   "label": "Registration Number",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nUnder Maintenance\nIdle\nDisposed",
+   "default": "Active",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assigned_driver",
+   "fieldtype": "Link",
+   "label": "Assigned Driver",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "section_break_specs",
+   "fieldtype": "Section Break",
+   "label": "Specifications"
+  },
+  {
+   "fieldname": "make",
+   "fieldtype": "Data",
+   "label": "Make"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Data",
+   "label": "Model"
+  },
+  {
+   "fieldname": "year_of_manufacture",
+   "fieldtype": "Int",
+   "label": "Year of Manufacture"
+  },
+  {
+   "fieldname": "column_break_specs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "chassis_no",
+   "fieldtype": "Data",
+   "label": "Chassis No"
+  },
+  {
+   "fieldname": "engine_no",
+   "fieldtype": "Data",
+   "label": "Engine No"
+  },
+  {
+   "fieldname": "fuel_type",
+   "fieldtype": "Select",
+   "label": "Fuel Type",
+   "options": "Diesel\nPetrol",
+   "default": "Diesel"
+  },
+  {
+   "fieldname": "tank_capacity_litres",
+   "fieldtype": "Float",
+   "label": "Tank Capacity (Litres)"
+  },
+  {
+   "fieldname": "section_break_odo",
+   "fieldtype": "Section Break",
+   "label": "Odometer & Capacity"
+  },
+  {
+   "fieldname": "current_odometer",
+   "fieldtype": "Float",
+   "label": "Current Odometer (Km)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_odo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "load_capacity_tonnes",
+   "fieldtype": "Float",
+   "label": "Load Capacity (Tonnes)"
+  },
+  {
+   "fieldname": "section_break_fin",
+   "fieldtype": "Section Break",
+   "label": "Financials"
+  },
+  {
+   "fieldname": "purchase_date",
+   "fieldtype": "Date",
+   "label": "Purchase Date"
+  },
+  {
+   "fieldname": "purchase_cost",
+   "fieldtype": "Currency",
+   "label": "Purchase Cost"
+  },
+  {
+   "fieldname": "depreciation_rate_percent",
+   "fieldtype": "Percent",
+   "label": "Annual Depreciation Rate (%)",
+   "default": "20"
+  },
+  {
+   "fieldname": "column_break_fin",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "salvage_value",
+   "fieldtype": "Currency",
+   "label": "Salvage Value"
+  },
+  {
+   "fieldname": "section_break_docs",
+   "fieldtype": "Section Break",
+   "label": "Compliance Documents"
+  },
+  {
+   "fieldname": "insurance_expiry_date",
+   "fieldtype": "Date",
+   "label": "Insurance Expiry Date"
+  },
+  {
+   "fieldname": "license_expiry_date",
+   "fieldtype": "Date",
+   "label": "License Expiry Date"
+  },
+  {
+   "fieldname": "column_break_docs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inspection_expiry_date",
+   "fieldtype": "Date",
+   "label": "Inspection Expiry Date"
+  },
+  {
+   "fieldname": "comesa_expiry_date",
+   "fieldtype": "Date",
+   "label": "COMESA/Insurance Yellow Card Expiry"
+  },
+  {
+   "fieldname": "section_break_img",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Truck Image"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "current_trailer",
+   "fieldtype": "Link",
+   "label": "Currently Coupled Trailer",
+   "options": "Trailer",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_gps",
+   "fieldtype": "Section Break",
+   "label": "GPS Tracking"
+  },
+  {
+   "fieldname": "enable_gps_tracking",
+   "fieldtype": "Check",
+   "label": "Track this Truck via GPS",
+   "default": "0"
+  },
+  {
+   "fieldname": "gps_device_id",
+   "fieldtype": "Data",
+   "label": "GPS Device / Unique ID",
+   "description": "The device identifier (e.g. Traccar 'Unique ID' / IMEI) exactly as registered on the tracking platform.",
+   "depends_on": "eval:doc.enable_gps_tracking",
+   "mandatory_depends_on": "eval:doc.enable_gps_tracking"
+  },
+  {
+   "fieldname": "column_break_gps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_latitude",
+   "fieldtype": "Float",
+   "label": "Last Latitude",
+   "precision": "8",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_longitude",
+   "fieldtype": "Float",
+   "label": "Last Longitude",
+   "precision": "8",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_gps_speed_kmh",
+   "fieldtype": "Float",
+   "label": "Last Speed (Km/h)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_gps_update",
+   "fieldtype": "Datetime",
+   "label": "Last GPS Update",
+   "read_only": 1
+  },
+  {
+   "fieldname": "gps_location",
+   "fieldtype": "Geolocation",
+   "label": "Last Known Location (Map)",
+   "read_only": 1
+  }
+ ],
+ "image_field": "image",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Truck",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

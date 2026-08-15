@@ -1,0 +1,243 @@
+{
+ "actions": [],
+ "autoname": "format:TRIP-{truck}-{#####}",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "truck",
+  "driver",
+  "route",
+  "trip_date",
+  "status",
+  "column_break_1",
+  "company",
+  "customer",
+  "sales_order",
+  "section_break_route",
+  "origin",
+  "destination",
+  "column_break_route",
+  "start_odometer",
+  "end_odometer",
+  "distance_km",
+  "section_break_rev",
+  "revenue",
+  "section_break_offload",
+  "offload_status",
+  "offload_datetime",
+  "column_break_offload",
+  "offload_odometer",
+  "offloaded_by",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Employee",
+   "fetch_from": "truck.assigned_driver"
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Link",
+   "label": "Route",
+   "options": "Route",
+   "description": "Optional: link a standard Route to auto-fill Origin/Destination and drive per-destination driver pay."
+  },
+  {
+   "fieldname": "trip_date",
+   "fieldtype": "Date",
+   "label": "Trip Date",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Planned\nOngoing\nCompleted\nCancelled",
+   "default": "Planned",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "truck.company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer (if 3rd Party Haulage)",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order",
+   "description": "If this haulage is against a Sales Order for the customer, link it here to auto-fill Revenue Earned from its Grand Total. Leave blank and enter Revenue manually if there's no Sales Order."
+  },
+  {
+   "fieldname": "section_break_route",
+   "fieldtype": "Section Break",
+   "label": "Route"
+  },
+  {
+   "fieldname": "origin",
+   "fieldtype": "Data",
+   "label": "Origin",
+   "fetch_from": "route.origin",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination",
+   "fetch_from": "route.destination",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "column_break_route",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_odometer",
+   "fieldtype": "Float",
+   "label": "Start Odometer (Km)"
+  },
+  {
+   "fieldname": "end_odometer",
+   "fieldtype": "Float",
+   "label": "End Odometer (Km)"
+  },
+  {
+   "fieldname": "distance_km",
+   "fieldtype": "Float",
+   "label": "Distance (Km)",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "section_break_rev",
+   "fieldtype": "Section Break",
+   "label": "Revenue (Optional)"
+  },
+  {
+   "fieldname": "revenue",
+   "fieldtype": "Currency",
+   "label": "Revenue Earned",
+   "fetch_from": "sales_order.grand_total",
+   "fetch_if_empty": 1,
+   "read_only_depends_on": "eval:doc.sales_order",
+   "description": "Auto-filled from the linked Sales Order's Grand Total. If no Sales Order is linked, enter the revenue for this trip manually."
+  },
+  {
+   "fieldname": "section_break_offload",
+   "fieldtype": "Section Break",
+   "label": "Offloading (Empty Truck Tracking)"
+  },
+  {
+   "fieldname": "offload_status",
+   "fieldtype": "Select",
+   "label": "Offload Status",
+   "options": "Not Offloaded\nOffloaded",
+   "default": "Not Offloaded",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "offload_datetime",
+   "fieldtype": "Datetime",
+   "label": "Offloaded At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_offload",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "offload_odometer",
+   "fieldtype": "Float",
+   "label": "Odometer At Offload (Km)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "offloaded_by",
+   "fieldtype": "Link",
+   "label": "Offload Confirmed By",
+   "options": "Employee",
+   "read_only": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Truck Trip",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

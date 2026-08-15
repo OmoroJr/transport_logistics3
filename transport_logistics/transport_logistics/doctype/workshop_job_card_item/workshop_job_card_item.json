@@ -1,0 +1,32 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "qty",
+  "uom",
+  "rate",
+  "amount"
+ ],
+ "fields": [
+  {"fieldname": "item_code", "fieldtype": "Link", "label": "Item (Spare Part)", "options": "Item", "reqd": 1, "in_list_view": 1},
+  {"fieldname": "item_name", "fieldtype": "Data", "label": "Item Name", "fetch_from": "item_code.item_name", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "qty", "fieldtype": "Float", "label": "Qty", "reqd": 1, "in_list_view": 1, "default": "1"},
+  {"fieldname": "uom", "fieldtype": "Link", "label": "UOM", "options": "UOM", "fetch_from": "item_code.stock_uom", "read_only": 1, "in_list_view": 1},
+  {"fieldname": "rate", "fieldtype": "Currency", "label": "Rate", "in_list_view": 1},
+  {"fieldname": "amount", "fieldtype": "Currency", "label": "Amount", "read_only": 1, "in_list_view": 1}
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Workshop Job Card Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

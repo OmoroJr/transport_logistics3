@@ -1,0 +1,20 @@
+{
+ "color": "#E67E22",
+ "creation": "2026-01-01 00:00:00",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "Truck",
+ "filters_json": "[[\"Truck\", \"status\", \"=\", \"Under Maintenance\"]]",
+ "function": "Count",
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Trucks Under Maintenance",
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Trucks Under Maintenance",
+ "owner": "Administrator",
+ "report_function": "Count",
+ "show_percentage_stats": 0,
+ "type": "Document Type"
+}

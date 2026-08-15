@@ -1,0 +1,261 @@
+{
+ "actions": [],
+ "autoname": "format:FUEL-{truck}-{#####}",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "source",
+  "fuel_dispensing",
+  "truck",
+  "source",
+  "fuel_dispensing",
+  "date",
+  "driver",
+  "column_break_1",
+  "company",
+  "docstatus_info",
+  "section_break_odo",
+  "previous_odometer",
+  "odometer_reading",
+  "distance_covered",
+  "column_break_odo",
+  "full_tank",
+  "fuel_station",
+  "section_break_qty",
+  "fuel_qty_litres",
+  "rate_per_litre",
+  "column_break_qty",
+  "total_amount",
+  "fuel_efficiency_km_per_litre",
+  "remarks",
+  "journal_entry",
+  "source",
+  "fuel_dispensing"
+ ],
+ "fields": [
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "External Purchase\nInternal Bulk Dispensing",
+   "default": "External Purchase",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "fuel_dispensing",
+   "fieldtype": "Link",
+   "label": "Fuel Dispensing Record",
+   "options": "Fuel Dispensing",
+   "read_only": 1,
+   "depends_on": "eval:doc.source=='Internal Bulk Dispensing'"
+  },
+  {
+   "fieldname": "truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "External Purchase\nInternal Bulk Dispensing",
+   "default": "External Purchase",
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "fuel_dispensing",
+   "fieldtype": "Link",
+   "label": "Fuel Dispensing Record",
+   "options": "Fuel Dispensing",
+   "read_only": 1,
+   "depends_on": "eval:doc.source=='Internal Bulk Dispensing'"
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Employee",
+   "fetch_from": "truck.assigned_driver"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "truck.company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_odo",
+   "fieldtype": "Section Break",
+   "label": "Odometer"
+  },
+  {
+   "fieldname": "previous_odometer",
+   "fieldtype": "Float",
+   "label": "Previous Odometer (Km)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "odometer_reading",
+   "fieldtype": "Float",
+   "label": "Current Odometer Reading (Km)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "distance_covered",
+   "fieldtype": "Float",
+   "label": "Distance Covered (Km)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_odo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "full_tank",
+   "fieldtype": "Check",
+   "label": "Full Tank",
+   "default": "1"
+  },
+  {
+   "fieldname": "fuel_station",
+   "fieldtype": "Data",
+   "label": "Fuel Station"
+  },
+  {
+   "fieldname": "section_break_qty",
+   "fieldtype": "Section Break",
+   "label": "Fuel & Cost"
+  },
+  {
+   "fieldname": "fuel_qty_litres",
+   "fieldtype": "Float",
+   "label": "Fuel Quantity (Litres)",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "rate_per_litre",
+   "fieldtype": "Currency",
+   "label": "Rate per Litre",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "fuel_efficiency_km_per_litre",
+   "fieldtype": "Float",
+   "label": "Fuel Efficiency (Km/Litre)",
+   "read_only": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source",
+   "fieldtype": "Select",
+   "label": "Source",
+   "options": "External Purchase\nInternal Bulk Dispensing",
+   "default": "External Purchase",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "fuel_dispensing",
+   "fieldtype": "Link",
+   "label": "Fuel Dispensing Record",
+   "options": "Fuel Dispensing",
+   "read_only": 1
+  }
+ ],
+ "is_submittable": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Truck Fuel Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
