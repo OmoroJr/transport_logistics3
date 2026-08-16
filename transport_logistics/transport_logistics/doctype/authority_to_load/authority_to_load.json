@@ -21,6 +21,7 @@
   "column_break_checklist",
   "inspection_valid",
   "comesa_valid",
+  "driver_license_valid",
   "all_checks_passed",
   "failure_reason",
   "section_break_signoff",
@@ -28,27 +29,146 @@
   "remarks"
  ],
  "fields": [
-  {"fieldname": "truck", "fieldtype": "Link", "label": "Truck", "options": "Truck", "reqd": 1, "in_list_view": 1, "in_standard_filter": 1},
-  {"fieldname": "truck_trip", "fieldtype": "Link", "label": "Truck Trip", "options": "Truck Trip", "reqd": 1, "in_list_view": 1, "description": "The trip this authority permits loading for. Create the Truck Trip first (as Planned), then issue the Authority to Load against it."},
-  {"fieldname": "date", "fieldtype": "Datetime", "label": "Date & Time", "reqd": 1, "default": "now", "in_list_view": 1},
-  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
-  {"fieldname": "driver", "fieldtype": "Link", "label": "Driver", "options": "Employee", "fetch_from": "truck.assigned_driver", "fetch_if_empty": 1},
-  {"fieldname": "trailer", "fieldtype": "Link", "label": "Trailer", "options": "Trailer", "fetch_from": "truck.current_trailer", "fetch_if_empty": 1},
-  {"fieldname": "section_break_context", "fieldtype": "Section Break", "label": "Trip Context"},
-  {"fieldname": "customer", "fieldtype": "Link", "label": "Customer", "options": "Customer", "fetch_from": "truck_trip.customer", "fetch_if_empty": 1},
-  {"fieldname": "destination", "fieldtype": "Data", "label": "Destination", "fetch_from": "truck_trip.destination", "fetch_if_empty": 1},
-  {"fieldname": "section_break_checklist", "fieldtype": "Section Break", "label": "Compliance Checklist (auto-verified on save)"},
-  {"fieldname": "truck_empty_ok", "fieldtype": "Check", "label": "Truck Currently Empty", "read_only": 1},
-  {"fieldname": "insurance_valid", "fieldtype": "Check", "label": "Insurance Valid", "read_only": 1},
-  {"fieldname": "license_valid", "fieldtype": "Check", "label": "License Valid", "read_only": 1},
-  {"fieldname": "column_break_checklist", "fieldtype": "Column Break"},
-  {"fieldname": "inspection_valid", "fieldtype": "Check", "label": "Inspection Valid", "read_only": 1},
-  {"fieldname": "comesa_valid", "fieldtype": "Check", "label": "COMESA / Yellow Card Valid", "read_only": 1},
-  {"fieldname": "all_checks_passed", "fieldtype": "Check", "label": "All Checks Passed", "read_only": 1, "bold": 1},
-  {"fieldname": "failure_reason", "fieldtype": "Small Text", "label": "Failure Reason(s)", "read_only": 1, "depends_on": "eval:!doc.all_checks_passed"},
-  {"fieldname": "section_break_signoff", "fieldtype": "Section Break", "label": "Sign-off"},
-  {"fieldname": "issued_by", "fieldtype": "Link", "label": "Issued By", "options": "Employee"},
-  {"fieldname": "remarks", "fieldtype": "Small Text", "label": "Remarks"}
+  {
+   "fieldname": "truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "truck_trip",
+   "fieldtype": "Link",
+   "label": "Truck Trip",
+   "options": "Truck Trip",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "The trip this authority permits loading for. Create the Truck Trip first (as Planned), then issue the Authority to Load against it."
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Datetime",
+   "label": "Date & Time",
+   "reqd": 1,
+   "default": "now",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Employee",
+   "fetch_from": "truck.assigned_driver",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "trailer",
+   "fieldtype": "Link",
+   "label": "Trailer",
+   "options": "Trailer",
+   "fetch_from": "truck.current_trailer",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "section_break_context",
+   "fieldtype": "Section Break",
+   "label": "Trip Context"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "Customer",
+   "fetch_from": "truck_trip.customer",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "destination",
+   "fieldtype": "Data",
+   "label": "Destination",
+   "fetch_from": "truck_trip.destination",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "section_break_checklist",
+   "fieldtype": "Section Break",
+   "label": "Compliance Checklist (auto-verified on save)"
+  },
+  {
+   "fieldname": "truck_empty_ok",
+   "fieldtype": "Check",
+   "label": "Truck Currently Empty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "insurance_valid",
+   "fieldtype": "Check",
+   "label": "Insurance Valid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "license_valid",
+   "fieldtype": "Check",
+   "label": "License Valid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_checklist",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "inspection_valid",
+   "fieldtype": "Check",
+   "label": "Inspection Valid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "comesa_valid",
+   "fieldtype": "Check",
+   "label": "COMESA / Yellow Card Valid",
+   "read_only": 1
+  },
+  {
+   "fieldname": "driver_license_valid",
+   "fieldtype": "Check",
+   "label": "Driver License Valid"
+  },
+  {
+   "fieldname": "all_checks_passed",
+   "fieldtype": "Check",
+   "label": "All Checks Passed",
+   "read_only": 1,
+   "bold": 1
+  },
+  {
+   "fieldname": "failure_reason",
+   "fieldtype": "Small Text",
+   "label": "Failure Reason(s)",
+   "read_only": 1,
+   "depends_on": "eval:!doc.all_checks_passed"
+  },
+  {
+   "fieldname": "section_break_signoff",
+   "fieldtype": "Section Break",
+   "label": "Sign-off"
+  },
+  {
+   "fieldname": "issued_by",
+   "fieldtype": "Link",
+   "label": "Issued By",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
  ],
  "is_submittable": 1,
  "index_web_pages_for_search": 1,
@@ -60,9 +180,43 @@
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
-  {"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1, "report": 1, "export": 1, "print": 1, "email": 1, "share": 1},
-  {"role": "Transport Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1, "report": 1, "export": 1, "print": 1, "email": 1, "share": 1},
-  {"role": "Transport User", "read": 1, "write": 1, "create": 1, "submit": 1, "report": 1, "print": 1}
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
  ],
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -118,6 +118,50 @@ def notify_users(subject, message, reference_doctype, reference_name, priority="
 		).insert(ignore_permissions=True)
 
 
+def check_driver_license_expiry():
+	"""Same idea as check_document_expiry() above, but for drivers' Driving
+	License Expiry Date (a Custom Field on Employee — see fixtures/
+	custom_field.json). Only Employees who actually have that field filled
+	in are checked, so this naturally scopes itself to drivers without
+	needing a separate 'is this employee a driver' flag."""
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	days_before = settings.expiry_alert_days_before or 30
+	notify_role = settings.notify_role or "Transport Manager"
+
+	user_list = _get_users_with_role(notify_role)
+	if not user_list:
+		return
+
+	employees = frappe.get_all(
+		"Employee",
+		filters={"status": "Active", "driving_license_expiry_date": ["is", "set"]},
+		fields=["name", "employee_name", "driving_license_expiry_date"],
+	)
+
+	today_date = getdate(today())
+
+	for emp in employees:
+		days_left = date_diff(emp.driving_license_expiry_date, today_date)
+		if days_left <= days_before:
+			_raise_driver_license_alert(emp, emp.driving_license_expiry_date, days_left, user_list)
+
+
+def _raise_driver_license_alert(emp, exp_date, days_left, user_list):
+	if days_left < 0:
+		status = f"expired {abs(days_left)} day(s) ago"
+		priority = "High"
+	else:
+		status = f"expires in {days_left} day(s)"
+		priority = "High" if days_left <= 7 else "Medium"
+
+	subject = f"Driving License for {emp.employee_name} ({emp.name}) {status}"
+	message = (
+		f"Driving License for {emp.employee_name} ({emp.name}) {status} (due {exp_date}). "
+		"Please arrange renewal before assigning further trips."
+	)
+	notify_users(subject, message, "Employee", emp.name, priority=priority)
+
+
 def _raise_alert(truck, label, exp_date, days_left, user_list):
 	if days_left < 0:
 		status = f"expired {abs(days_left)} day(s) ago"

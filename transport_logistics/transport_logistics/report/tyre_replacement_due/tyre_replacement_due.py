@@ -19,8 +19,10 @@ def get_columns():
 		{"label": _("Tyre"), "fieldname": "name", "fieldtype": "Link", "options": "Tyre", "width": 110},
 		{"label": _("Brand"), "fieldname": "brand", "fieldtype": "Data", "width": 100},
 		{"label": _("Size"), "fieldname": "size", "fieldtype": "Data", "width": 100},
+		{"label": _("Vehicle Type"), "fieldname": "current_vehicle_type", "fieldtype": "Data", "width": 90},
 		{"label": _("Truck"), "fieldname": "current_truck", "fieldtype": "Link", "options": "Truck", "width": 100},
-		{"label": _("Position"), "fieldname": "current_position", "fieldtype": "Data", "width": 130},
+		{"label": _("Trailer"), "fieldname": "current_trailer", "fieldtype": "Link", "options": "Trailer", "width": 100},
+		{"label": _("Position"), "fieldname": "current_position", "fieldtype": "Data", "width": 150},
 		{"label": _("Km Run"), "fieldname": "total_km_run", "fieldtype": "Float", "width": 100},
 		{"label": _("Expected Life (Km)"), "fieldname": "expected_life_km", "fieldtype": "Float", "width": 130},
 		{"label": _("% Used"), "fieldname": "percent_used", "fieldtype": "Percent", "width": 90},
@@ -37,13 +39,20 @@ def get_data(filters):
 	if filters.get("truck"):
 		conditions += " and t.current_truck = %(truck)s"
 		values["truck"] = filters.get("truck")
+	if filters.get("trailer"):
+		conditions += " and t.current_trailer = %(trailer)s"
+		values["trailer"] = filters.get("trailer")
+	if filters.get("vehicle_type"):
+		conditions += " and t.current_vehicle_type = %(vehicle_type)s"
+		values["vehicle_type"] = filters.get("vehicle_type")
 	if filters.get("status"):
 		conditions += " and t.status = %(status)s"
 		values["status"] = filters.get("status")
 
 	tyres = frappe.db.sql(
 		f"""
-		select t.name, t.brand, t.size, t.current_truck, t.current_position,
+		select t.name, t.brand, t.size, t.current_vehicle_type, t.current_truck,
+		       t.current_trailer, t.current_position,
 		       t.total_km_run, t.expected_life_km, t.retread_count, t.status
 		from `tabTyre` t
 		{conditions}
@@ -69,7 +78,9 @@ def get_data(filters):
 				"name": tyre.name,
 				"brand": tyre.brand,
 				"size": tyre.size,
+				"current_vehicle_type": tyre.current_vehicle_type,
 				"current_truck": tyre.current_truck,
+				"current_trailer": tyre.current_trailer,
 				"current_position": tyre.current_position,
 				"total_km_run": tyre.total_km_run,
 				"expected_life_km": tyre.expected_life_km,

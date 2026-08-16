@@ -4,10 +4,22 @@
 frappe.query_reports["Tyre Replacement Due"] = {
 	filters: [
 		{
+			fieldname: "vehicle_type",
+			label: __("Vehicle Type"),
+			fieldtype: "Select",
+			options: "\nTruck\nTrailer",
+		},
+		{
 			fieldname: "truck",
 			label: __("Truck"),
 			fieldtype: "Link",
 			options: "Truck",
+		},
+		{
+			fieldname: "trailer",
+			label: __("Trailer"),
+			fieldtype: "Link",
+			options: "Trailer",
 		},
 		{
 			fieldname: "status",

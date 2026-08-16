@@ -12,6 +12,7 @@ app_license = "MIT"
 # Include js/css in doctype views
 doctype_js = {
     "Truck": "transport_logistics/doctype/truck/truck.js",
+    "Trailer": "transport_logistics/doctype/trailer/trailer.js",
     "Tyre": "transport_logistics/doctype/tyre/tyre.js",
     "Employee": "public/js/employee.js",
 }
@@ -117,6 +118,7 @@ doc_events = {
 scheduler_events = {
     "daily": [
         "transport_logistics.transport_logistics.tasks.check_document_expiry",
+        "transport_logistics.transport_logistics.tasks.check_driver_license_expiry",
     ],
     "cron": {
         # Live GPS location + odometer sync. Runs every 15 minutes; the job
@@ -130,5 +132,20 @@ scheduler_events = {
 }
 
 fixtures = [
-    {"dt": "Role", "filters": [["role_name", "in", ["Transport Manager", "Transport User"]]]}
+    {"dt": "Role", "filters": [["role_name", "in", ["Transport Manager", "Transport User"]]]},
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "fieldname",
+                "in",
+                [
+                    "section_break_driving_license",
+                    "driving_license_number",
+                    "column_break_driving_license",
+                    "driving_license_expiry_date",
+                ],
+            ]
+        ],
+    },
 ]

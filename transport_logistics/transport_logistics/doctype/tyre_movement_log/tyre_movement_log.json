@@ -9,7 +9,14 @@
   "movement_type",
   "date",
   "column_break_1",
+  "vehicle_type",
   "truck",
+  "trailer",
+  "column_break_vehicle",
+  "is_spare",
+  "axle_type",
+  "axle_number",
+  "side",
   "position",
   "odometer_reading",
   "section_break_cost",
@@ -51,19 +58,69 @@
    "fieldtype": "Column Break"
   },
   {
+   "fieldname": "vehicle_type",
+   "fieldtype": "Select",
+   "label": "Vehicle Type",
+   "options": "\nTruck\nTrailer",
+   "mandatory_depends_on": "eval:[\"Fitted\",\"Rotated\"].includes(doc.movement_type)"
+  },
+  {
    "fieldname": "truck",
    "fieldtype": "Link",
    "label": "Truck",
    "options": "Truck",
    "in_list_view": 1,
-   "mandatory_depends_on": "eval:['Fitted','Rotated'].includes(doc.movement_type)"
+   "mandatory_depends_on": "eval:doc.vehicle_type==\"Truck\" && [\"Fitted\",\"Rotated\"].includes(doc.movement_type)"
+  },
+  {
+   "fieldname": "trailer",
+   "fieldtype": "Link",
+   "label": "Trailer",
+   "options": "Trailer",
+   "mandatory_depends_on": "eval:doc.vehicle_type==\"Trailer\" && [\"Fitted\",\"Rotated\"].includes(doc.movement_type)"
+  },
+  {
+   "fieldname": "column_break_vehicle",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "is_spare",
+   "fieldtype": "Check",
+   "label": "This is the Spare",
+   "default": "0",
+   "description": "Tick if this tyre is being mounted as the vehicle's spare, rather than on a numbered axle position."
+  },
+  {
+   "fieldname": "axle_type",
+   "fieldtype": "Select",
+   "label": "Axle Type",
+   "options": "\nFront\nRear",
+   "depends_on": "eval:doc.vehicle_type==\"Truck\" && !doc.is_spare",
+   "mandatory_depends_on": "eval:doc.vehicle_type==\"Truck\" && !doc.is_spare && [\"Fitted\",\"Rotated\"].includes(doc.movement_type)",
+   "description": "Trailer axles aren't split into Front/Rear, so this only applies to trucks."
+  },
+  {
+   "fieldname": "axle_number",
+   "fieldtype": "Int",
+   "label": "Axle Number",
+   "depends_on": "eval:!doc.is_spare",
+   "mandatory_depends_on": "eval:!doc.is_spare && [\"Fitted\",\"Rotated\"].includes(doc.movement_type)",
+   "description": "1-indexed from the front of that axle group, e.g. Rear Axle 2 of 3. Must be within the vehicle's configured axle count."
+  },
+  {
+   "fieldname": "side",
+   "fieldtype": "Select",
+   "label": "Side",
+   "options": "\nLeft\nRight\nLeft Outer\nLeft Inner\nRight Outer\nRight Inner",
+   "depends_on": "eval:!doc.is_spare",
+   "mandatory_depends_on": "eval:!doc.is_spare && [\"Fitted\",\"Rotated\"].includes(doc.movement_type)"
   },
   {
    "fieldname": "position",
-   "fieldtype": "Select",
+   "fieldtype": "Data",
    "label": "Position",
-   "options": "\nFront Left\nFront Right\nRear Left Outer\nRear Left Inner\nRear Right Outer\nRear Right Inner\nSpare",
-   "mandatory_depends_on": "eval:['Fitted','Rotated'].includes(doc.movement_type)"
+   "read_only": 1,
+   "description": "Auto-generated readable label from the fields above, e.g. 'Rear Axle 2 - Left Outer' or 'Spare'."
   },
   {
    "fieldname": "odometer_reading",

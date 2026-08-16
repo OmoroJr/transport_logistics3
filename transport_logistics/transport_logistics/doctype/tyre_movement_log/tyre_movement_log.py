@@ -1,9 +1,19 @@
 # Copyright (c) 2026, Wycliffs and contributors
 # For license information, please see license.txt
 
+"""
+Tyre positions aren't a fixed list — fleets are mixed: some trucks have 1
+front axle + 1 rear axle, others have 1 front + 3 rear (or more), and
+trailers in this fleet are normally 3-axle (see Truck.front_axle_count /
+Truck.rear_axle_count / Trailer.axle_count). So instead of a hardcoded
+"Front Left / Rear Right Outer / ..." Select list, a position here is built
+from (vehicle type, axle type, axle number, side) and validated against
+that specific vehicle's configured axle counts, or flagged as the Spare.
+"""
+
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, nowdate
+from frappe.utils import cint, flt, nowdate
 
 
 class TyreMovementLog(Document):
@@ -11,22 +21,83 @@ class TyreMovementLog(Document):
 		validate_movement(self)
 
 
+def build_position_label(vehicle_type, is_spare, axle_type, axle_number, side):
+	if cint(is_spare):
+		return "Spare"
+	if vehicle_type == "Truck":
+		return f"{axle_type} Axle {cint(axle_number)} - {side}"
+	if vehicle_type == "Trailer":
+		return f"Trailer Axle {cint(axle_number)} - {side}"
+	return ""
+
+
+def _get_max_axles(doc):
+	"""Returns (max_axles, description) for the axle group this movement is
+	targeting, based on the specific truck's/trailer's configured axle
+	counts — not a fleet-wide assumption."""
+	if doc.vehicle_type == "Truck":
+		if not doc.truck:
+			frappe.throw("Truck is required for a Truck vehicle type.")
+		front, rear = frappe.db.get_value(
+			"Truck", doc.truck, ["front_axle_count", "rear_axle_count"]
+		)
+		if doc.axle_type == "Front":
+			return cint(front) or 1, f"Truck {doc.truck} has {cint(front) or 1} front axle(s)"
+		elif doc.axle_type == "Rear":
+			return cint(rear) or 1, f"Truck {doc.truck} has {cint(rear) or 1} rear axle(s)"
+		else:
+			frappe.throw("Axle Type (Front/Rear) is required for a truck tyre position.")
+	elif doc.vehicle_type == "Trailer":
+		if not doc.trailer:
+			frappe.throw("Trailer is required for a Trailer vehicle type.")
+		axle_count = frappe.db.get_value("Trailer", doc.trailer, "axle_count")
+		return cint(axle_count) or 3, f"Trailer {doc.trailer} has {cint(axle_count) or 3} axle(s)"
+	else:
+		frappe.throw("Vehicle Type must be Truck or Trailer.")
+
+
 def validate_movement(doc, method=None):
-	if doc.movement_type in ("Fitted", "Rotated") and not (doc.truck and doc.position):
-		frappe.throw("Truck and Position are mandatory for Fitted / Rotated movements")
+	if doc.movement_type not in ("Fitted", "Rotated"):
+		doc.position = "Spare" if cint(doc.is_spare) else (doc.position or "")
+		return
+
+	if not doc.vehicle_type:
+		frappe.throw("Vehicle Type (Truck/Trailer) is mandatory for Fitted / Rotated movements")
+	if doc.vehicle_type == "Truck" and not doc.truck:
+		frappe.throw("Truck is mandatory when Vehicle Type is Truck")
+	if doc.vehicle_type == "Trailer" and not doc.trailer:
+		frappe.throw("Trailer is mandatory when Vehicle Type is Trailer")
+
+	if not cint(doc.is_spare):
+		if not doc.axle_number or not doc.side:
+			frappe.throw("Axle Number and Side are mandatory (or tick 'This is the Spare')")
+
+		max_axles, description = _get_max_axles(doc)
+		if cint(doc.axle_number) < 1 or cint(doc.axle_number) > max_axles:
+			frappe.throw(
+				f"Axle Number {doc.axle_number} is out of range — {description}, so valid "
+				f"axle numbers are 1 to {max_axles}."
+			)
+
+	doc.position = build_position_label(
+		doc.vehicle_type, doc.is_spare, doc.axle_type, doc.axle_number, doc.side
+	)
+
+	vehicle = doc.truck if doc.vehicle_type == "Truck" else doc.trailer
+	vehicle_field = "truck" if doc.vehicle_type == "Truck" else "trailer"
 
 	if doc.movement_type == "Fitted":
 		tyre_status = frappe.db.get_value("Tyre", doc.tyre, "status")
 		if tyre_status == "Fitted":
 			frappe.throw(
-				f"Tyre {doc.tyre} is already fitted to a truck. Record a Removed movement for "
+				f"Tyre {doc.tyre} is already fitted to a vehicle. Record a Removed movement for "
 				"it first before fitting it elsewhere — a tyre can't be in two places at once."
 			)
 
 		existing = frappe.db.exists(
 			"Tyre Movement Log",
 			{
-				"truck": doc.truck,
+				vehicle_field: vehicle,
 				"position": doc.position,
 				"movement_type": "Fitted",
 				"docstatus": 1,
@@ -36,17 +107,17 @@ def validate_movement(doc, method=None):
 		# only block if that position hasn't since been vacated
 		if existing:
 			last_on_position = frappe.db.sql(
-				"""
+				f"""
 				select movement_type from `tabTyre Movement Log`
-				where truck=%s and position=%s and docstatus=1 and name != %s
+				where {vehicle_field}=%s and position=%s and docstatus=1 and name != %s
 				order by date desc, creation desc limit 1
 				""",
-				(doc.truck, doc.position, doc.name or ""),
+				(vehicle, doc.position, doc.name or ""),
 			)
 			if last_on_position and last_on_position[0][0] == "Fitted":
 				frappe.throw(
-					f"Position {doc.position} on Truck {doc.truck} already has a tyre fitted. "
-					"Record a Removed movement first."
+					f"Position {doc.position} on {doc.vehicle_type} {vehicle} already has a "
+					"tyre fitted. Record a Removed movement first."
 				)
 
 
@@ -55,37 +126,52 @@ def apply_movement(doc, method=None):
 
 	if doc.movement_type == "Fitted":
 		tyre.status = "Fitted"
-		tyre.current_truck = doc.truck
+		tyre.current_vehicle_type = doc.vehicle_type
+		tyre.current_truck = doc.truck if doc.vehicle_type == "Truck" else None
+		tyre.current_trailer = doc.trailer if doc.vehicle_type == "Trailer" else None
+		tyre.current_axle_type = doc.axle_type if not cint(doc.is_spare) else None
+		tyre.current_axle_number = doc.axle_number if not cint(doc.is_spare) else None
+		tyre.current_side = doc.side if not cint(doc.is_spare) else None
 		tyre.current_position = doc.position
 		tyre.fitted_at_odometer = doc.odometer_reading or 0
 
 	elif doc.movement_type == "Removed":
 		_accumulate_km(tyre, doc)
-		tyre.status = "In Stock"
-		tyre.current_truck = None
-		tyre.current_position = None
-		tyre.fitted_at_odometer = 0
+		_clear_current_fitment(tyre)
 
 	elif doc.movement_type == "Rotated":
 		_accumulate_km(tyre, doc)
+		tyre.current_axle_type = doc.axle_type if not cint(doc.is_spare) else None
+		tyre.current_axle_number = doc.axle_number if not cint(doc.is_spare) else None
+		tyre.current_side = doc.side if not cint(doc.is_spare) else None
 		tyre.current_position = doc.position
 		tyre.fitted_at_odometer = doc.odometer_reading or 0
 
 	elif doc.movement_type == "Retreaded":
 		_accumulate_km(tyre, doc)
 		tyre.status = "In Stock"
-		tyre.current_truck = None
-		tyre.current_position = None
-		tyre.fitted_at_odometer = 0
+		_clear_current_fitment(tyre)
 		tyre.retread_count = (tyre.retread_count or 0) + 1
 
 	elif doc.movement_type == "Scrapped":
 		_accumulate_km(tyre, doc)
 		tyre.status = "Scrapped"
-		tyre.current_truck = None
-		tyre.current_position = None
+		_clear_current_fitment(tyre, clear_position=False)
 
 	tyre.save(ignore_permissions=True)
+
+
+def _clear_current_fitment(tyre, clear_position=True):
+	tyre.status = "In Stock" if tyre.status != "Scrapped" else tyre.status
+	tyre.current_vehicle_type = None
+	tyre.current_truck = None
+	tyre.current_trailer = None
+	tyre.current_axle_type = None
+	tyre.current_axle_number = None
+	tyre.current_side = None
+	if clear_position:
+		tyre.current_position = None
+	tyre.fitted_at_odometer = 0
 
 
 def reverse_movement(doc, method=None):
@@ -106,18 +192,34 @@ def _accumulate_km(tyre, doc):
 
 
 @frappe.whitelist()
-def create_fitment(tyre, truck, position, odometer_reading=None, date=None):
-	"""Convenience wrapper behind the 'Fit to Truck' button on both the
-	Tyre and Truck forms — associating a tyre with a truck always goes
-	through a real, submitted Tyre Movement Log record (never a silent
-	edit to Tyre.current_truck), so the audit trail and validation in
-	validate_movement()/apply_movement() above still apply."""
+def create_fitment(
+	tyre,
+	vehicle_type,
+	axle_type=None,
+	axle_number=None,
+	side=None,
+	is_spare=0,
+	truck=None,
+	trailer=None,
+	odometer_reading=None,
+	date=None,
+):
+	"""Convenience wrapper behind the 'Fit to Truck/Trailer' button on the
+	Tyre, Truck, and Trailer forms — associating a tyre with a vehicle
+	always goes through a real, submitted Tyre Movement Log record (never
+	a silent edit to Tyre.current_*), so the axle-count validation and
+	audit trail in validate_movement()/apply_movement() above still apply."""
 	doc = frappe.get_doc(
 		{
 			"doctype": "Tyre Movement Log",
 			"tyre": tyre,
+			"vehicle_type": vehicle_type,
 			"truck": truck,
-			"position": position,
+			"trailer": trailer,
+			"is_spare": cint(is_spare),
+			"axle_type": axle_type,
+			"axle_number": cint(axle_number) if axle_number else None,
+			"side": side,
 			"movement_type": "Fitted",
 			"date": date or nowdate(),
 			"odometer_reading": flt(odometer_reading) if odometer_reading else None,
@@ -130,21 +232,39 @@ def create_fitment(tyre, truck, position, odometer_reading=None, date=None):
 
 @frappe.whitelist()
 def create_removal(tyre, odometer_reading=None, date=None, remarks=None):
-	"""Convenience wrapper behind the 'Remove from Truck' button — same
-	idea as create_fitment() above, for movement_type=Removed. Reads the
-	tyre's current truck/position itself so the caller doesn't have to."""
+	"""Convenience wrapper behind the 'Remove from Truck/Trailer' button —
+	same idea as create_fitment() above, for movement_type=Removed. Reads
+	the tyre's current fitment fields itself so the caller doesn't have to."""
 	tyre_data = frappe.db.get_value(
-		"Tyre", tyre, ["current_truck", "current_position"], as_dict=True
+		"Tyre",
+		tyre,
+		[
+			"current_vehicle_type",
+			"current_truck",
+			"current_trailer",
+			"current_axle_type",
+			"current_axle_number",
+			"current_side",
+			"current_position",
+		],
+		as_dict=True,
 	)
-	if not tyre_data or not tyre_data.current_truck:
-		frappe.throw(f"Tyre {tyre} is not currently fitted to any truck.")
+	if not tyre_data or not (tyre_data.current_truck or tyre_data.current_trailer):
+		frappe.throw(f"Tyre {tyre} is not currently fitted to any vehicle.")
+
+	is_spare = 1 if tyre_data.current_position == "Spare" else 0
 
 	doc = frappe.get_doc(
 		{
 			"doctype": "Tyre Movement Log",
 			"tyre": tyre,
+			"vehicle_type": tyre_data.current_vehicle_type,
 			"truck": tyre_data.current_truck,
-			"position": tyre_data.current_position,
+			"trailer": tyre_data.current_trailer,
+			"is_spare": is_spare,
+			"axle_type": tyre_data.current_axle_type,
+			"axle_number": tyre_data.current_axle_number,
+			"side": tyre_data.current_side,
 			"movement_type": "Removed",
 			"date": date or nowdate(),
 			"odometer_reading": flt(odometer_reading) if odometer_reading else None,
@@ -154,3 +274,17 @@ def create_removal(tyre, odometer_reading=None, date=None, remarks=None):
 	doc.insert(ignore_permissions=True)
 	doc.submit()
 	return doc.name
+
+
+@frappe.whitelist()
+def get_axle_config(vehicle_type, vehicle):
+	"""Used by the client scripts to build the Axle Number options for
+	whichever specific truck/trailer was selected, instead of guessing at
+	a fleet-wide default."""
+	if vehicle_type == "Truck":
+		front, rear = frappe.db.get_value("Truck", vehicle, ["front_axle_count", "rear_axle_count"])
+		return {"front_axle_count": cint(front) or 1, "rear_axle_count": cint(rear) or 1}
+	elif vehicle_type == "Trailer":
+		axle_count = frappe.db.get_value("Trailer", vehicle, "axle_count")
+		return {"axle_count": cint(axle_count) or 3}
+	frappe.throw("Vehicle Type must be Truck or Trailer.")

@@ -56,12 +56,33 @@ frappe.ui.form.on("Truck", {
 							}),
 						},
 						{
+							fieldtype: "Check",
+							fieldname: "is_spare",
+							label: __("This is the Spare"),
+						},
+						{
 							fieldtype: "Select",
-							fieldname: "position",
-							label: __("Position"),
-							options:
-								"\nFront Left\nFront Right\nRear Left Outer\nRear Left Inner\nRear Right Outer\nRear Right Inner\nSpare",
-							reqd: 1,
+							fieldname: "axle_type",
+							label: __("Axle Type"),
+							options: "\nFront\nRear",
+							depends_on: "eval:!doc.is_spare",
+						},
+						{
+							fieldtype: "Int",
+							fieldname: "axle_number",
+							label: __("Axle Number"),
+							description: __("This truck has {0} front axle(s) and {1} rear axle(s).", [
+								frm.doc.front_axle_count || 1,
+								frm.doc.rear_axle_count || 1,
+							]),
+							depends_on: "eval:!doc.is_spare",
+						},
+						{
+							fieldtype: "Select",
+							fieldname: "side",
+							label: __("Side"),
+							options: "\nLeft\nRight\nLeft Outer\nLeft Inner\nRight Outer\nRight Inner",
+							depends_on: "eval:!doc.is_spare",
 						},
 						{
 							fieldtype: "Date",
@@ -79,13 +100,23 @@ frappe.ui.form.on("Truck", {
 					],
 					primary_action_label: __("Fit"),
 					primary_action(values) {
+						if (!values.is_spare && (!values.axle_type || !values.axle_number || !values.side)) {
+							frappe.msgprint(
+								__("Axle Type, Axle Number, and Side are required, or tick 'This is the Spare'.")
+							);
+							return;
+						}
 						frappe.call({
 							method:
 								"transport_logistics.transport_logistics.doctype.tyre_movement_log.tyre_movement_log.create_fitment",
 							args: {
 								tyre: values.tyre,
+								vehicle_type: "Truck",
 								truck: frm.doc.name,
-								position: values.position,
+								is_spare: values.is_spare,
+								axle_type: values.axle_type,
+								axle_number: values.axle_number,
+								side: values.side,
 								date: values.date,
 								odometer_reading: values.odometer_reading,
 							},

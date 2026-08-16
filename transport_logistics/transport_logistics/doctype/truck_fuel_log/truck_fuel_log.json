@@ -5,8 +5,6 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "source",
-  "fuel_dispensing",
   "truck",
   "source",
   "fuel_dispensing",
@@ -14,7 +12,6 @@
   "driver",
   "column_break_1",
   "company",
-  "docstatus_info",
   "section_break_odo",
   "previous_odometer",
   "odometer_reading",
@@ -29,28 +26,9 @@
   "total_amount",
   "fuel_efficiency_km_per_litre",
   "remarks",
-  "journal_entry",
-  "source",
-  "fuel_dispensing"
+  "journal_entry"
  ],
  "fields": [
-  {
-   "fieldname": "source",
-   "fieldtype": "Select",
-   "label": "Source",
-   "options": "External Purchase\nInternal Bulk Dispensing",
-   "default": "External Purchase",
-   "in_list_view": 1,
-   "in_standard_filter": 1
-  },
-  {
-   "fieldname": "fuel_dispensing",
-   "fieldtype": "Link",
-   "label": "Fuel Dispensing Record",
-   "options": "Fuel Dispensing",
-   "read_only": 1,
-   "depends_on": "eval:doc.source=='Internal Bulk Dispensing'"
-  },
   {
    "fieldname": "truck",
    "fieldtype": "Link",
@@ -188,22 +166,6 @@
    "fieldtype": "Link",
    "label": "Journal Entry",
    "options": "Journal Entry",
-   "read_only": 1
-  },
-  {
-   "fieldname": "source",
-   "fieldtype": "Select",
-   "label": "Source",
-   "options": "External Purchase\nInternal Bulk Dispensing",
-   "default": "External Purchase",
-   "read_only": 1,
-   "in_standard_filter": 1
-  },
-  {
-   "fieldname": "fuel_dispensing",
-   "fieldtype": "Link",
-   "label": "Fuel Dispensing Record",
-   "options": "Fuel Dispensing",
    "read_only": 1
   }
  ],

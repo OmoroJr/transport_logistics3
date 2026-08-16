@@ -22,6 +22,9 @@
   "engine_no",
   "fuel_type",
   "tank_capacity_litres",
+  "section_break_axles",
+  "front_axle_count",
+  "rear_axle_count",
   "section_break_odo",
   "current_odometer",
   "column_break_odo",
@@ -141,6 +144,25 @@
    "fieldname": "tank_capacity_litres",
    "fieldtype": "Float",
    "label": "Tank Capacity (Litres)"
+  },
+  {
+   "fieldname": "section_break_axles",
+   "fieldtype": "Section Break",
+   "label": "Axle Configuration"
+  },
+  {
+   "fieldname": "front_axle_count",
+   "fieldtype": "Int",
+   "label": "Front Axles",
+   "default": "1",
+   "description": "Number of front axles on this truck. Used to build the list of valid tyre positions - most trucks have 1, but some heavier configurations have 2."
+  },
+  {
+   "fieldname": "rear_axle_count",
+   "fieldtype": "Int",
+   "label": "Rear Axles",
+   "default": "1",
+   "description": "Number of rear axles on this truck (e.g. 1 for a standard rigid, 3 for a heavier configuration). Used to build the list of valid tyre positions for fitting/rotating tyres on this specific truck."
   },
   {
    "fieldname": "section_break_odo",
