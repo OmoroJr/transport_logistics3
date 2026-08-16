@@ -12,6 +12,7 @@ app_license = "MIT"
 # Include js/css in doctype views
 doctype_js = {
     "Truck": "transport_logistics/doctype/truck/truck.js",
+    "Tyre": "transport_logistics/doctype/tyre/tyre.js",
     "Employee": "public/js/employee.js",
 }
 

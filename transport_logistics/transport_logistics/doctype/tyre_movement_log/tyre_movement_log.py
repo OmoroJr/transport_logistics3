@@ -3,6 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt, nowdate
 
 
 class TyreMovementLog(Document):
@@ -15,6 +16,13 @@ def validate_movement(doc, method=None):
 		frappe.throw("Truck and Position are mandatory for Fitted / Rotated movements")
 
 	if doc.movement_type == "Fitted":
+		tyre_status = frappe.db.get_value("Tyre", doc.tyre, "status")
+		if tyre_status == "Fitted":
+			frappe.throw(
+				f"Tyre {doc.tyre} is already fitted to a truck. Record a Removed movement for "
+				"it first before fitting it elsewhere — a tyre can't be in two places at once."
+			)
+
 		existing = frappe.db.exists(
 			"Tyre Movement Log",
 			{
@@ -95,3 +103,54 @@ def _accumulate_km(tyre, doc):
 		km_run = doc.odometer_reading - tyre.fitted_at_odometer
 		if km_run > 0:
 			tyre.total_km_run = (tyre.total_km_run or 0) + km_run
+
+
+@frappe.whitelist()
+def create_fitment(tyre, truck, position, odometer_reading=None, date=None):
+	"""Convenience wrapper behind the 'Fit to Truck' button on both the
+	Tyre and Truck forms — associating a tyre with a truck always goes
+	through a real, submitted Tyre Movement Log record (never a silent
+	edit to Tyre.current_truck), so the audit trail and validation in
+	validate_movement()/apply_movement() above still apply."""
+	doc = frappe.get_doc(
+		{
+			"doctype": "Tyre Movement Log",
+			"tyre": tyre,
+			"truck": truck,
+			"position": position,
+			"movement_type": "Fitted",
+			"date": date or nowdate(),
+			"odometer_reading": flt(odometer_reading) if odometer_reading else None,
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	doc.submit()
+	return doc.name
+
+
+@frappe.whitelist()
+def create_removal(tyre, odometer_reading=None, date=None, remarks=None):
+	"""Convenience wrapper behind the 'Remove from Truck' button — same
+	idea as create_fitment() above, for movement_type=Removed. Reads the
+	tyre's current truck/position itself so the caller doesn't have to."""
+	tyre_data = frappe.db.get_value(
+		"Tyre", tyre, ["current_truck", "current_position"], as_dict=True
+	)
+	if not tyre_data or not tyre_data.current_truck:
+		frappe.throw(f"Tyre {tyre} is not currently fitted to any truck.")
+
+	doc = frappe.get_doc(
+		{
+			"doctype": "Tyre Movement Log",
+			"tyre": tyre,
+			"truck": tyre_data.current_truck,
+			"position": tyre_data.current_position,
+			"movement_type": "Removed",
+			"date": date or nowdate(),
+			"odometer_reading": flt(odometer_reading) if odometer_reading else None,
+			"remarks": remarks,
+		}
+	)
+	doc.insert(ignore_permissions=True)
+	doc.submit()
+	return doc.name

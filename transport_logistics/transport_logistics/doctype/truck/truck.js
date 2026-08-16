@@ -41,6 +41,72 @@ frappe.ui.form.on("Truck", {
 				frappe.new_doc("Trailer Coupling Log", { truck: frm.doc.name });
 			}, "Create");
 
+			frm.add_custom_button(__("Fit Tyre"), () => {
+				const dialog = new frappe.ui.Dialog({
+					title: __("Fit Tyre to {0}", [frm.doc.name]),
+					fields: [
+						{
+							fieldtype: "Link",
+							fieldname: "tyre",
+							label: __("Tyre"),
+							options: "Tyre",
+							reqd: 1,
+							get_query: () => ({
+								filters: { status: ["in", ["In Stock", "Retreaded"]] },
+							}),
+						},
+						{
+							fieldtype: "Select",
+							fieldname: "position",
+							label: __("Position"),
+							options:
+								"\nFront Left\nFront Right\nRear Left Outer\nRear Left Inner\nRear Right Outer\nRear Right Inner\nSpare",
+							reqd: 1,
+						},
+						{
+							fieldtype: "Date",
+							fieldname: "date",
+							label: __("Date"),
+							default: frappe.datetime.get_today(),
+							reqd: 1,
+						},
+						{
+							fieldtype: "Float",
+							fieldname: "odometer_reading",
+							label: __("Odometer Reading (Km)"),
+							default: frm.doc.current_odometer || null,
+						},
+					],
+					primary_action_label: __("Fit"),
+					primary_action(values) {
+						frappe.call({
+							method:
+								"transport_logistics.transport_logistics.doctype.tyre_movement_log.tyre_movement_log.create_fitment",
+							args: {
+								tyre: values.tyre,
+								truck: frm.doc.name,
+								position: values.position,
+								date: values.date,
+								odometer_reading: values.odometer_reading,
+							},
+							freeze: true,
+							callback() {
+								dialog.hide();
+								frappe.show_alert({
+									message: __("Tyre fitted to {0}.", [frm.doc.name]),
+									indicator: "green",
+								});
+							},
+						});
+					},
+				});
+				dialog.show();
+			}, "Create");
+
+			frm.add_custom_button(__("Tyres on this Truck"), () => {
+				frappe.set_route("List", "Tyre", { current_truck: frm.doc.name });
+			}, "View");
+
 			frm.add_custom_button("Utilization Report", () => {
 				frappe.set_route("query-report", "Truck Utilization", { truck: frm.doc.name });
 			});
