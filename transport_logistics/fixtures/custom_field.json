@@ -1,0 +1,36 @@
+[
+ {
+  "doctype": "Custom Field",
+  "dt": "Employee",
+  "fieldname": "section_break_driving_license",
+  "label": "Driving License",
+  "fieldtype": "Section Break",
+  "insert_after": "date_of_joining",
+  "collapsible": 1
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Employee",
+  "fieldname": "driving_license_number",
+  "label": "Driving License Number",
+  "fieldtype": "Data",
+  "insert_after": "section_break_driving_license",
+  "description": "Only relevant for employees who drive company trucks."
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Employee",
+  "fieldname": "column_break_driving_license",
+  "fieldtype": "Column Break",
+  "insert_after": "driving_license_number"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "Employee",
+  "fieldname": "driving_license_expiry_date",
+  "label": "Driving License Expiry Date",
+  "fieldtype": "Date",
+  "insert_after": "column_break_driving_license",
+  "description": "Tracked by the daily compliance-expiry check (Transport Logistics Settings) and verified on every Authority to Load for a trip this employee is driving."
+ }
+]
