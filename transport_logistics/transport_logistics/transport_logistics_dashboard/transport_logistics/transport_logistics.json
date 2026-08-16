@@ -1,0 +1,34 @@
+{
+ "cards": [
+  {"card": "Trucks Loaded (En Route)"},
+  {"card": "Trucks Empty (Available)"},
+  {"card": "Active Trucks"},
+  {"card": "Trucks Under Maintenance"},
+  {"card": "Trucks In Yard"},
+  {"card": "Active Trailers"},
+  {"card": "Open Job Cards"},
+  {"card": "Active Workshops"},
+  {"card": "Unpaid Driver Payments"}
+ ],
+ "charts": [
+  {"chart": "Fleet Status", "width": "Half"},
+  {"chart": "Trailer Fleet by Type", "width": "Half"},
+  {"chart": "Job Cards by Workshop", "width": "Half"},
+  {"chart": "Fuel Cost Trend", "width": "Full"},
+  {"chart": "Truck Trips Over Time", "width": "Full"},
+  {"chart": "Maintenance Cost Trend", "width": "Full"},
+  {"chart": "Accidents by Severity", "width": "Half"},
+  {"chart": "Tyre Status Overview", "width": "Half"}
+ ],
+ "creation": "2026-01-01 00:00:00",
+ "dashboard_name": "Transport Logistics",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Transport Logistics",
+ "owner": "Administrator"
+}
