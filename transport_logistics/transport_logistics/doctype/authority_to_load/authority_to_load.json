@@ -22,6 +22,7 @@
   "inspection_valid",
   "comesa_valid",
   "driver_license_valid",
+  "port_pass_valid",
   "all_checks_passed",
   "failure_reason",
   "section_break_signoff",
@@ -138,6 +139,12 @@
    "fieldname": "driver_license_valid",
    "fieldtype": "Check",
    "label": "Driver License Valid"
+  },
+  {
+   "fieldname": "port_pass_valid",
+   "fieldtype": "Check",
+   "label": "Port Pass Valid",
+   "description": "Only checked if the driver has a Port Pass on file (Employee > Port Pass section). Drivers who don't need port access are unaffected."
   },
   {
    "fieldname": "all_checks_passed",

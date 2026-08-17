@@ -124,6 +124,17 @@ def check_driver_license_expiry():
 	custom_field.json). Only Employees who actually have that field filled
 	in are checked, so this naturally scopes itself to drivers without
 	needing a separate 'is this employee a driver' flag."""
+	_check_employee_expiry_field("driving_license_expiry_date", "Driving License")
+
+
+def check_port_pass_expiry():
+	"""Same idea as check_driver_license_expiry() above, but for Port Pass
+	Expiry Date — relevant only to drivers who actually operate at a port
+	and have a Port Pass Number on file (Employee > Port Pass section)."""
+	_check_employee_expiry_field("port_pass_expiry_date", "Port Pass")
+
+
+def _check_employee_expiry_field(fieldname, label):
 	settings = frappe.get_cached_doc("Transport Logistics Settings")
 	days_before = settings.expiry_alert_days_before or 30
 	notify_role = settings.notify_role or "Transport Manager"
@@ -132,7 +143,7 @@ def check_driver_license_expiry():
 	if not user_list:
 		return
 
-	if "driving_license_expiry_date" not in frappe.db.get_table_columns("Employee"):
+	if fieldname not in frappe.db.get_table_columns("Employee"):
 		# Custom Field fixture (fixtures/custom_field.json) hasn't been
 		# migrated on this site yet — skip quietly rather than crashing
 		# the whole scheduled job every night.
@@ -140,19 +151,20 @@ def check_driver_license_expiry():
 
 	employees = frappe.get_all(
 		"Employee",
-		filters={"status": "Active", "driving_license_expiry_date": ["is", "set"]},
-		fields=["name", "employee_name", "driving_license_expiry_date"],
+		filters={"status": "Active", fieldname: ["is", "set"]},
+		fields=["name", "employee_name", fieldname],
 	)
 
 	today_date = getdate(today())
 
 	for emp in employees:
-		days_left = date_diff(emp.driving_license_expiry_date, today_date)
+		exp_date = emp.get(fieldname)
+		days_left = date_diff(exp_date, today_date)
 		if days_left <= days_before:
-			_raise_driver_license_alert(emp, emp.driving_license_expiry_date, days_left, user_list)
+			_raise_employee_expiry_alert(emp, label, exp_date, days_left, user_list)
 
 
-def _raise_driver_license_alert(emp, exp_date, days_left, user_list):
+def _raise_employee_expiry_alert(emp, label, exp_date, days_left, user_list):
 	if days_left < 0:
 		status = f"expired {abs(days_left)} day(s) ago"
 		priority = "High"
@@ -160,9 +172,9 @@ def _raise_driver_license_alert(emp, exp_date, days_left, user_list):
 		status = f"expires in {days_left} day(s)"
 		priority = "High" if days_left <= 7 else "Medium"
 
-	subject = f"Driving License for {emp.employee_name} ({emp.name}) {status}"
+	subject = f"{label} for {emp.employee_name} ({emp.name}) {status}"
 	message = (
-		f"Driving License for {emp.employee_name} ({emp.name}) {status} (due {exp_date}). "
+		f"{label} for {emp.employee_name} ({emp.name}) {status} (due {exp_date}). "
 		"Please arrange renewal before assigning further trips."
 	)
 	notify_users(subject, message, "Employee", emp.name, priority=priority)

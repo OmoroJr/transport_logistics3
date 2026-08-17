@@ -6,15 +6,19 @@ Authority to Load is the formal check-and-sign-off step before a truck can
 be loaded for a trip: it verifies the truck is currently empty (not already
 loaded on another trip), that its compliance documents (insurance,
 license, inspection, COMESA/Yellow Card) aren't expired as of today, and
-that the assigned driver's Driving License isn't expired either — then
-blocks submission entirely if any check fails. A submitted Authority to
-Load is required before its linked Truck Trip can move to "Ongoing" (see
-truck_trip.py's validate_loading_authority).
+that the assigned driver's Driving License — and Port Pass, if they have
+one on file — aren't expired either — then blocks submission entirely if
+any check fails. A submitted Authority to Load is required before its
+linked Truck Trip can move to "Ongoing" (see truck_trip.py's
+validate_loading_authority).
 
 A blank expiry date (on the Truck, or the driver's Employee record) is
 treated as "not tracked, not a blocker" — consistent with how the
 compliance-expiry scheduler in tasks.py already treats untracked dates —
-so this doesn't punish fleets that haven't filled in every date field.
+so this doesn't punish fleets that haven't filled in every date field. The
+Port Pass check specifically only activates for drivers who actually have
+a Port Pass Number on file; drivers who never need port access are
+unaffected either way.
 """
 
 import frappe
@@ -60,30 +64,46 @@ def run_compliance_checks(doc, method=None):
 	doc.comesa_valid = _date_ok(truck.comesa_expiry_date, check_date, "COMESA/Yellow Card", failures)
 
 	if doc.driver:
-		driver_license_expiry = _get_driver_license_expiry(doc.driver)
+		driver_license_expiry = _get_employee_field(doc.driver, "driving_license_expiry_date")
 		doc.driver_license_valid = _date_ok(
 			driver_license_expiry, check_date, f"Driver ({doc.driver}) Driving License", failures
 		)
+
+		port_pass_expiry = _get_employee_field(doc.driver, "port_pass_expiry_date")
+		port_pass_number = _get_employee_field(doc.driver, "port_pass_number")
+		if port_pass_number:
+			# Only enforced if the driver actually has a Port Pass on file —
+			# drivers who don't need port access are unaffected.
+			doc.port_pass_valid = _date_ok(
+				port_pass_expiry, check_date, f"Driver ({doc.driver}) Port Pass", failures
+			)
+		else:
+			doc.port_pass_valid = 1
 	else:
 		doc.driver_license_valid = 1  # nothing to check without a driver
+		doc.port_pass_valid = 1
 
 	doc.all_checks_passed = 1 if (
 		doc.truck_empty_ok and doc.insurance_valid and doc.license_valid
 		and doc.inspection_valid and doc.comesa_valid and doc.driver_license_valid
+		and doc.port_pass_valid
 	) else 0
 	doc.failure_reason = "\n".join(failures) if failures else ""
 
 
-def _get_driver_license_expiry(driver):
-	"""Wrapped separately because driving_license_expiry_date is a Custom
-	Field (see fixtures/custom_field.json), not a core Employee column. If
-	that fixture hasn't been migrated onto this site yet, the column won't
-	exist in the database — treat that as "not tracked" (same as a blank
-	date) rather than letting a raw SQL error block every single Authority
-	to Load save."""
-	if "driving_license_expiry_date" not in frappe.db.get_table_columns("Employee"):
+def _get_employee_field(employee, fieldname):
+	"""driving_license_expiry_date / port_pass_number / port_pass_expiry_date
+	are Custom Fields (see fixtures/custom_field.json), not core Employee
+	columns. If a fixture hasn't been migrated onto this site yet, the
+	column won't exist in the database — treat that as "not tracked" (same
+	as blank) rather than letting a raw SQL error block every Authority to
+	Load save."""
+	if fieldname not in frappe.db.get_table_columns("Employee"):
 		return None
-	return frappe.db.get_value("Employee", driver, "driving_license_expiry_date")
+	return frappe.db.get_value("Employee", employee, fieldname)
+
+
+def _date_ok(expiry_date, check_date, label, failures):
 	if not expiry_date:
 		return 1  # not tracked — not a blocker
 	if getdate(expiry_date) < check_date:

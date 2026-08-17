@@ -119,6 +119,7 @@ scheduler_events = {
     "daily": [
         "transport_logistics.transport_logistics.tasks.check_document_expiry",
         "transport_logistics.transport_logistics.tasks.check_driver_license_expiry",
+        "transport_logistics.transport_logistics.tasks.check_port_pass_expiry",
     ],
     "cron": {
         # Live GPS location + odometer sync. Runs every 15 minutes; the job
@@ -144,6 +145,10 @@ fixtures = [
                     "driving_license_number",
                     "column_break_driving_license",
                     "driving_license_expiry_date",
+                    "section_break_port_pass",
+                    "port_pass_number",
+                    "column_break_port_pass",
+                    "port_pass_expiry_date",
                 ],
             ]
         ],

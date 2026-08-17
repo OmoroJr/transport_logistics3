@@ -3,24 +3,26 @@
 
 frappe.ui.form.on("Employee", {
 	refresh(frm) {
-		if (!frm.doc.driving_license_expiry_date) return;
-
-		const days_left = frappe.datetime.get_diff(
-			frm.doc.driving_license_expiry_date,
-			frappe.datetime.get_today()
-		);
-
-		let indicator = "green";
-		let label = __("Driving License valid until {0}", [frm.doc.driving_license_expiry_date]);
-
-		if (days_left < 0) {
-			indicator = "red";
-			label = __("Driving License expired {0} day(s) ago", [Math.abs(days_left)]);
-		} else if (days_left <= 30) {
-			indicator = "orange";
-			label = __("Driving License expires in {0} day(s)", [days_left]);
-		}
-
-		frm.dashboard.add_indicator(label, indicator);
+		add_expiry_indicator(frm, "driving_license_expiry_date", __("Driving License"));
+		add_expiry_indicator(frm, "port_pass_expiry_date", __("Port Pass"));
 	},
 });
+
+function add_expiry_indicator(frm, fieldname, label) {
+	if (!frm.doc[fieldname]) return;
+
+	const days_left = frappe.datetime.get_diff(frm.doc[fieldname], frappe.datetime.get_today());
+
+	let indicator = "green";
+	let text = __("{0} valid until {1}", [label, frm.doc[fieldname]]);
+
+	if (days_left < 0) {
+		indicator = "red";
+		text = __("{0} expired {1} day(s) ago", [label, Math.abs(days_left)]);
+	} else if (days_left <= 30) {
+		indicator = "orange";
+		text = __("{0} expires in {1} day(s)", [label, days_left]);
+	}
+
+	frm.dashboard.add_indicator(text, indicator);
+}

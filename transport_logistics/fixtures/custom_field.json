@@ -36,5 +36,43 @@
   "fieldtype": "Date",
   "insert_after": "column_break_driving_license",
   "description": "Tracked by the daily compliance-expiry check (Transport Logistics Settings) and verified on every Authority to Load for a trip this employee is driving."
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-section_break_port_pass",
+  "dt": "Employee",
+  "fieldname": "section_break_port_pass",
+  "label": "Port Pass",
+  "fieldtype": "Section Break",
+  "insert_after": "driving_license_expiry_date",
+  "collapsible": 1
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-port_pass_number",
+  "dt": "Employee",
+  "fieldname": "port_pass_number",
+  "label": "Port Pass Number",
+  "fieldtype": "Data",
+  "insert_after": "section_break_port_pass",
+  "description": "Only relevant for employees who need port authority (e.g. KPA) access to operate at the port."
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-column_break_port_pass",
+  "dt": "Employee",
+  "fieldname": "column_break_port_pass",
+  "fieldtype": "Column Break",
+  "insert_after": "port_pass_number"
+ },
+ {
+  "doctype": "Custom Field",
+  "name": "Employee-port_pass_expiry_date",
+  "dt": "Employee",
+  "fieldname": "port_pass_expiry_date",
+  "label": "Port Pass Expiry Date",
+  "fieldtype": "Date",
+  "insert_after": "column_break_port_pass",
+  "description": "Tracked by the daily compliance-expiry check (Transport Logistics Settings) and verified on every Authority to Load for a driver who has a Port Pass Number on file (not dependent on the trip's destination)."
  }
 ]
