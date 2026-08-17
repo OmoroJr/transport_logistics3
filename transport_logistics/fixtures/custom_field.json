@@ -1,6 +1,7 @@
 [
  {
   "doctype": "Custom Field",
+  "name": "Employee-section_break_driving_license",
   "dt": "Employee",
   "fieldname": "section_break_driving_license",
   "label": "Driving License",
@@ -10,6 +11,7 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Employee-driving_license_number",
   "dt": "Employee",
   "fieldname": "driving_license_number",
   "label": "Driving License Number",
@@ -19,6 +21,7 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Employee-column_break_driving_license",
   "dt": "Employee",
   "fieldname": "column_break_driving_license",
   "fieldtype": "Column Break",
@@ -26,6 +29,7 @@
  },
  {
   "doctype": "Custom Field",
+  "name": "Employee-driving_license_expiry_date",
   "dt": "Employee",
   "fieldname": "driving_license_expiry_date",
   "label": "Driving License Expiry Date",

@@ -60,9 +60,7 @@ def run_compliance_checks(doc, method=None):
 	doc.comesa_valid = _date_ok(truck.comesa_expiry_date, check_date, "COMESA/Yellow Card", failures)
 
 	if doc.driver:
-		driver_license_expiry = frappe.db.get_value(
-			"Employee", doc.driver, "driving_license_expiry_date"
-		)
+		driver_license_expiry = _get_driver_license_expiry(doc.driver)
 		doc.driver_license_valid = _date_ok(
 			driver_license_expiry, check_date, f"Driver ({doc.driver}) Driving License", failures
 		)
@@ -76,7 +74,16 @@ def run_compliance_checks(doc, method=None):
 	doc.failure_reason = "\n".join(failures) if failures else ""
 
 
-def _date_ok(expiry_date, check_date, label, failures):
+def _get_driver_license_expiry(driver):
+	"""Wrapped separately because driving_license_expiry_date is a Custom
+	Field (see fixtures/custom_field.json), not a core Employee column. If
+	that fixture hasn't been migrated onto this site yet, the column won't
+	exist in the database — treat that as "not tracked" (same as a blank
+	date) rather than letting a raw SQL error block every single Authority
+	to Load save."""
+	if "driving_license_expiry_date" not in frappe.db.get_table_columns("Employee"):
+		return None
+	return frappe.db.get_value("Employee", driver, "driving_license_expiry_date")
 	if not expiry_date:
 		return 1  # not tracked — not a blocker
 	if getdate(expiry_date) < check_date:

@@ -132,6 +132,12 @@ def check_driver_license_expiry():
 	if not user_list:
 		return
 
+	if "driving_license_expiry_date" not in frappe.db.get_table_columns("Employee"):
+		# Custom Field fixture (fixtures/custom_field.json) hasn't been
+		# migrated on this site yet — skip quietly rather than crashing
+		# the whole scheduled job every night.
+		return
+
 	employees = frappe.get_all(
 		"Employee",
 		filters={"status": "Active", "driving_license_expiry_date": ["is", "set"]},
