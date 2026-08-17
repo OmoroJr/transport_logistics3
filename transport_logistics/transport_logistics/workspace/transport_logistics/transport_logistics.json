@@ -25,7 +25,7 @@
    "label": "Job Cards by Workshop"
   }
  ],
- "content": "[{\"id\": \"header_main\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Transport Logistics</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_truck\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Truck\", \"col\": 3}}, {\"id\": \"shortcut_job_card\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Workshop Job Card\", \"col\": 3}}, {\"id\": \"shortcut_gate_pass\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Gate Pass\", \"col\": 3}}, {\"id\": \"shortcut_mileage\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver Mileage Payment\", \"col\": 3}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"header_dashboard\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Dashboard</b></span>\", \"col\": 12}}, {\"id\": \"card_trucks_loaded\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Loaded (En Route)\", \"col\": 3}}, {\"id\": \"card_trucks_empty\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Empty (Available)\", \"col\": 3}}, {\"id\": \"card_active_trucks\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Trucks\", \"col\": 3}}, {\"id\": \"card_under_maintenance\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Under Maintenance\", \"col\": 3}}, {\"id\": \"card_in_yard\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks In Yard\", \"col\": 3}}, {\"id\": \"card_open_jobs\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Job Cards\", \"col\": 3}}, {\"id\": \"card_active_workshops\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Workshops\", \"col\": 3}}, {\"id\": \"card_unpaid\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Unpaid Driver Payments\", \"col\": 3}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"chart_fleet_status\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Fleet Status\", \"col\": 6}}, {\"id\": \"chart_trailer_type\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Trailer Fleet by Type\", \"col\": 6}}, {\"id\": \"chart_fuel_trend\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Fuel Cost Trend\", \"col\": 6}}, {\"id\": \"chart_maintenance_trend\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Maintenance Cost Trend\", \"col\": 6}}, {\"id\": \"chart_accidents\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Accidents by Severity\", \"col\": 6}}, {\"id\": \"chart_job_cards_by_workshop\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Job Cards by Workshop\", \"col\": 6}}, {\"id\": \"spacer_3\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"card_fleet\", \"type\": \"card\", \"data\": {\"card_name\": \"Fleet & Fuel\", \"col\": 4}}, {\"id\": \"card_trailers\", \"type\": \"card\", \"data\": {\"card_name\": \"Trailers & Gate Pass\", \"col\": 4}}, {\"id\": \"card_maintenance\", \"type\": \"card\", \"data\": {\"card_name\": \"Maintenance & Safety\", \"col\": 4}}, {\"id\": \"spacer_4\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"card_payments\", \"type\": \"card\", \"data\": {\"card_name\": \"Payments & Reports\", \"col\": 4}}, {\"id\": \"card_clearing_forwarding\", \"type\": \"card\", \"data\": {\"card_name\": \"Clearing & Forwarding\", \"col\": 4}}, {\"id\": \"card_bulk_fuel\", \"type\": \"card\", \"data\": {\"card_name\": \"Bulk Fuel\", \"col\": 4}}]",
+ "content": "[{\"id\": \"header_main\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Transport Logistics</b></span>\", \"col\": 12}}, {\"id\": \"shortcut_truck\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Truck\", \"col\": 3}}, {\"id\": \"shortcut_job_card\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Workshop Job Card\", \"col\": 3}}, {\"id\": \"shortcut_gate_pass\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Gate Pass\", \"col\": 3}}, {\"id\": \"shortcut_mileage\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Driver Mileage Payment\", \"col\": 3}}, {\"id\": \"spacer_1\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"header_dashboard\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Dashboard</b></span>\", \"col\": 12}}, {\"id\": \"card_trucks_loaded\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Loaded (En Route)\", \"col\": 3}}, {\"id\": \"card_trucks_empty\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Empty (Available)\", \"col\": 3}}, {\"id\": \"card_active_trucks\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Trucks\", \"col\": 3}}, {\"id\": \"card_under_maintenance\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks Under Maintenance\", \"col\": 3}}, {\"id\": \"card_in_yard\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Trucks In Yard\", \"col\": 3}}, {\"id\": \"card_open_jobs\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Open Job Cards\", \"col\": 3}}, {\"id\": \"card_active_workshops\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Workshops\", \"col\": 3}}, {\"id\": \"card_highway_breakdowns\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Active Highway Breakdowns\", \"col\": 3}}, {\"id\": \"card_unpaid\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Unpaid Driver Payments\", \"col\": 3}}, {\"id\": \"spacer_2\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"chart_fleet_status\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Fleet Status\", \"col\": 6}}, {\"id\": \"chart_trailer_type\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Trailer Fleet by Type\", \"col\": 6}}, {\"id\": \"chart_fuel_trend\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Fuel Cost Trend\", \"col\": 6}}, {\"id\": \"chart_maintenance_trend\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Maintenance Cost Trend\", \"col\": 6}}, {\"id\": \"chart_accidents\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Accidents by Severity\", \"col\": 6}}, {\"id\": \"chart_job_cards_by_workshop\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Job Cards by Workshop\", \"col\": 6}}, {\"id\": \"spacer_3\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"card_fleet\", \"type\": \"card\", \"data\": {\"card_name\": \"Fleet & Fuel\", \"col\": 4}}, {\"id\": \"card_trailers\", \"type\": \"card\", \"data\": {\"card_name\": \"Trailers & Gate Pass\", \"col\": 4}}, {\"id\": \"card_maintenance\", \"type\": \"card\", \"data\": {\"card_name\": \"Maintenance & Safety\", \"col\": 4}}, {\"id\": \"spacer_4\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"card_payments\", \"type\": \"card\", \"data\": {\"card_name\": \"Payments & Reports\", \"col\": 4}}, {\"id\": \"card_clearing_forwarding\", \"type\": \"card\", \"data\": {\"card_name\": \"Clearing & Forwarding\", \"col\": 4}}, {\"id\": \"card_bulk_fuel\", \"type\": \"card\", \"data\": {\"card_name\": \"Bulk Fuel\", \"col\": 4}}]",
  "creation": "2026-01-01 00:00:00",
  "custom_blocks": [],
  "docstatus": 0,
@@ -107,7 +107,7 @@
   {
    "label": "Maintenance & Safety",
    "type": "Card Break",
-   "link_count": 6
+   "link_count": 7
   },
   {
    "label": "Truck Maintenance Log",
@@ -135,6 +135,13 @@
    "type": "Link",
    "link_type": "DocType",
    "link_to": "Accident Report",
+   "is_query_report": 0
+  },
+  {
+   "label": "Highway Breakdown",
+   "type": "Link",
+   "link_type": "DocType",
+   "link_to": "Highway Breakdown",
    "is_query_report": 0
   },
   {
@@ -315,6 +322,10 @@
   {
    "number_card_name": "Active Workshops",
    "label": "Active Workshops"
+  },
+  {
+   "number_card_name": "Active Highway Breakdowns",
+   "label": "Active Highway Breakdowns"
   }
  ],
  "owner": "Administrator",

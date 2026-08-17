@@ -18,6 +18,11 @@
   "odometer_reading",
   "column_break_loc",
   "description",
+  "section_break_map",
+  "latitude",
+  "longitude",
+  "column_break_map",
+  "breakdown_location_map",
   "section_break_recovery",
   "recovery_required",
   "towed",
@@ -133,6 +138,34 @@
    "label": "Description",
    "reqd": 1,
    "description": "What happened, symptoms observed, etc."
+  },
+  {
+   "fieldname": "section_break_map",
+   "fieldtype": "Section Break",
+   "label": "GPS Position",
+   "description": "Auto-filled from the truck's last live GPS position when this record is created, if GPS Tracking is enabled for it (see Truck > Track this Truck via GPS). Editable \u2014 correct it manually if the truck's GPS was stale or off at the time."
+  },
+  {
+   "fieldname": "latitude",
+   "fieldtype": "Float",
+   "label": "Latitude",
+   "precision": "8"
+  },
+  {
+   "fieldname": "longitude",
+   "fieldtype": "Float",
+   "label": "Longitude",
+   "precision": "8"
+  },
+  {
+   "fieldname": "column_break_map",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "breakdown_location_map",
+   "fieldtype": "Geolocation",
+   "label": "Map",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_recovery",

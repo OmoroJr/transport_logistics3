@@ -23,6 +23,8 @@ from frappe.utils import flt, time_diff_in_hours
 class HighwayBreakdown(Document):
 	def validate(self):
 		set_computed_fields(self)
+		auto_fill_gps_location(self)
+		rebuild_location_map(self)
 
 	def before_submit(self):
 		if self.status != "Resolved":
@@ -41,6 +43,51 @@ def set_computed_fields(doc, method=None):
 	if doc.resolved_datetime and doc.date_time_of_breakdown:
 		hours = time_diff_in_hours(doc.resolved_datetime, doc.date_time_of_breakdown)
 		doc.downtime_hours = round(hours, 1) if hours > 0 else 0
+
+
+def auto_fill_gps_location(doc, method=None):
+	"""If this truck reports live GPS (see gps_tracking.py) and no
+	coordinates have been entered yet, pull its last known position as a
+	starting point — the most reliable "where did this happen" data
+	available, since it comes from the device rather than someone's memory
+	of a highway km marker after the fact. Only fills in on creation, and
+	only if blank, so it never silently overwrites a manual correction."""
+	if not doc.is_new() or doc.latitude or doc.longitude:
+		return
+
+	truck_lat, truck_lon = frappe.db.get_value(
+		"Truck", doc.truck, ["last_latitude", "last_longitude"]
+	) or (None, None)
+
+	if truck_lat and truck_lon:
+		doc.latitude = truck_lat
+		doc.longitude = truck_lon
+
+
+def rebuild_location_map(doc, method=None):
+	"""Keeps the Map (Geolocation) field in sync with Latitude/Longitude
+	on every save — whether those came from auto_fill_gps_location() above
+	or a manual correction, so editing the coordinates always updates the
+	map rather than only working the first time."""
+	if not (doc.latitude and doc.longitude):
+		doc.breakdown_location_map = None
+		return
+
+	doc.breakdown_location_map = frappe.as_json(
+		{
+			"type": "FeatureCollection",
+			"features": [
+				{
+					"type": "Feature",
+					"geometry": {
+						"type": "Point",
+						"coordinates": [doc.longitude, doc.latitude],
+					},
+					"properties": {},
+				}
+			],
+		}
+	)
 
 
 def flag_truck_under_maintenance(doc, method=None):

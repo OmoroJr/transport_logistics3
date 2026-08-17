@@ -17,6 +17,15 @@ frappe.ui.form.on("Highway Breakdown", {
 			);
 		}
 
+		if (frm.doc.latitude && frm.doc.longitude) {
+			frm.add_custom_button(__("View on Map"), () => {
+				window.open(
+					`https://www.google.com/maps?q=${frm.doc.latitude},${frm.doc.longitude}`,
+					"_blank"
+				);
+			});
+		}
+
 		if (frm.doc.docstatus === 0 && !frm.doc.__islocal) {
 			frm.dashboard.add_indicator(
 				__(
