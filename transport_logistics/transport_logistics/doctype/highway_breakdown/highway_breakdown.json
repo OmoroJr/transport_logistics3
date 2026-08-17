@@ -1,0 +1,318 @@
+{
+ "actions": [],
+ "autoname": "format:BRK-{truck}-{#####}",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "truck",
+  "driver",
+  "truck_trip",
+  "date_time_of_breakdown",
+  "column_break_1",
+  "company",
+  "status",
+  "breakdown_type",
+  "section_break_loc",
+  "location",
+  "odometer_reading",
+  "column_break_loc",
+  "description",
+  "section_break_recovery",
+  "recovery_required",
+  "towed",
+  "recovery_vendor",
+  "column_break_recovery",
+  "cargo_transferred",
+  "replacement_truck",
+  "resolved_datetime",
+  "downtime_hours",
+  "section_break_cost",
+  "repair_cost",
+  "towing_cost",
+  "column_break_cost",
+  "other_cost",
+  "total_cost",
+  "journal_entry",
+  "section_break_rca",
+  "root_cause",
+  "column_break_rca",
+  "preventable",
+  "maintenance_log",
+  "section_break_attach",
+  "photo"
+ ],
+ "fields": [
+  {
+   "fieldname": "truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "driver",
+   "fieldtype": "Link",
+   "label": "Driver",
+   "options": "Employee",
+   "fetch_from": "truck.assigned_driver",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "truck_trip",
+   "fieldtype": "Link",
+   "label": "Truck Trip",
+   "options": "Truck Trip",
+   "description": "The trip that was interrupted by this breakdown, if any."
+  },
+  {
+   "fieldname": "date_time_of_breakdown",
+   "fieldtype": "Datetime",
+   "label": "Date & Time of Breakdown",
+   "reqd": 1,
+   "default": "Now",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "fetch_from": "truck.company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Reported\nRecovery Dispatched\nUnder Repair (Roadside)\nTowed to Workshop\nResolved",
+   "default": "Reported",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "allow_on_submit": 0
+  },
+  {
+   "fieldname": "breakdown_type",
+   "fieldtype": "Select",
+   "label": "Breakdown Type",
+   "options": "Engine\nTyre / Puncture\nElectrical\nBrakes\nTransmission\nFuel System\nCooling System\nSuspension\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "section_break_loc",
+   "fieldtype": "Section Break",
+   "label": "Location & Description"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1,
+   "description": "Highway name / Km marker or nearest landmark, e.g. 'Mombasa Rd, near Mtito Andei'."
+  },
+  {
+   "fieldname": "odometer_reading",
+   "fieldtype": "Float",
+   "label": "Odometer Reading (Km)"
+  },
+  {
+   "fieldname": "column_break_loc",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1,
+   "description": "What happened, symptoms observed, etc."
+  },
+  {
+   "fieldname": "section_break_recovery",
+   "fieldtype": "Section Break",
+   "label": "Recovery & Downtime"
+  },
+  {
+   "fieldname": "recovery_required",
+   "fieldtype": "Check",
+   "label": "Recovery Required",
+   "default": "0"
+  },
+  {
+   "fieldname": "towed",
+   "fieldtype": "Check",
+   "label": "Towed",
+   "default": "0"
+  },
+  {
+   "fieldname": "recovery_vendor",
+   "fieldtype": "Data",
+   "label": "Recovery / Towing Vendor",
+   "depends_on": "eval:doc.recovery_required || doc.towed"
+  },
+  {
+   "fieldname": "column_break_recovery",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cargo_transferred",
+   "fieldtype": "Check",
+   "label": "Cargo Transferred to Another Truck",
+   "default": "0",
+   "description": "Tick if the load was transshipped to another truck so the delivery could continue while this truck is out of service."
+  },
+  {
+   "fieldname": "replacement_truck",
+   "fieldtype": "Link",
+   "label": "Replacement Truck",
+   "options": "Truck",
+   "depends_on": "eval:doc.cargo_transferred"
+  },
+  {
+   "fieldname": "resolved_datetime",
+   "fieldtype": "Datetime",
+   "label": "Resolved At",
+   "description": "When the truck was back in service (repaired roadside, or delivered to/released from workshop)."
+  },
+  {
+   "fieldname": "downtime_hours",
+   "fieldtype": "Float",
+   "label": "Downtime (Hours)",
+   "read_only": 1,
+   "precision": "1"
+  },
+  {
+   "fieldname": "section_break_cost",
+   "fieldtype": "Section Break",
+   "label": "Cost"
+  },
+  {
+   "fieldname": "repair_cost",
+   "fieldtype": "Currency",
+   "label": "Repair Cost"
+  },
+  {
+   "fieldname": "towing_cost",
+   "fieldtype": "Currency",
+   "label": "Towing / Recovery Cost"
+  },
+  {
+   "fieldname": "column_break_cost",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "other_cost",
+   "fieldtype": "Currency",
+   "label": "Other Cost"
+  },
+  {
+   "fieldname": "total_cost",
+   "fieldtype": "Currency",
+   "label": "Total Cost",
+   "read_only": 1
+  },
+  {
+   "fieldname": "journal_entry",
+   "fieldtype": "Link",
+   "label": "Journal Entry",
+   "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_rca",
+   "fieldtype": "Section Break",
+   "label": "Root Cause"
+  },
+  {
+   "fieldname": "root_cause",
+   "fieldtype": "Small Text",
+   "label": "Root Cause"
+  },
+  {
+   "fieldname": "column_break_rca",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "preventable",
+   "fieldtype": "Check",
+   "label": "Preventable with Better Maintenance",
+   "default": "0",
+   "description": "Flag for reporting \u2014 helps identify patterns of breakdowns that better preventive maintenance could have avoided."
+  },
+  {
+   "fieldname": "maintenance_log",
+   "fieldtype": "Link",
+   "label": "Related Truck Maintenance Log",
+   "options": "Truck Maintenance Log",
+   "description": "Link to the workshop maintenance record if this breakdown resulted in a logged repair."
+  },
+  {
+   "fieldname": "section_break_attach",
+   "fieldtype": "Section Break",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "photo",
+   "fieldtype": "Attach",
+   "label": "Photo"
+  }
+ ],
+ "is_submittable": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Highway Breakdown",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

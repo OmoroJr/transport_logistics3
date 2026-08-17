@@ -167,6 +167,25 @@ def post_accident_to_gl(doc, method=None):
 		doc.db_set("journal_entry", je_name, update_modified=False)
 
 
+def post_breakdown_to_gl(doc, method=None):
+	"""Posts the total cost (repair + towing + other) of a highway breakdown."""
+	settings = _get_settings()
+	if not settings.enable_gl_posting or doc.get("journal_entry"):
+		return
+	if not doc.total_cost or doc.total_cost <= 0:
+		return
+	je_name = _create_journal_entry(
+		doc.company,
+		frappe.utils.getdate(doc.date_time_of_breakdown),
+		settings.breakdown_expense_account,
+		doc.total_cost,
+		settings.default_cost_center,
+		f"Highway Breakdown {doc.name} - Truck {doc.truck} ({doc.breakdown_type})",
+	)
+	if je_name:
+		doc.db_set("journal_entry", je_name, update_modified=False)
+
+
 def post_bulk_fuel_purchase_to_gl(doc, method=None):
 	"""Bulk fuel bought into a tank is a stock asset, not yet an expense —
 	debit the Fuel Stock Asset account, credit however it was paid for."""

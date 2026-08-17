@@ -69,6 +69,17 @@ doc_events = {
         ],
         "on_cancel": "transport_logistics.transport_logistics.gl_utils.cancel_linked_journal_entry",
     },
+    "Highway Breakdown": {
+        "after_insert": [
+            "transport_logistics.transport_logistics.doctype.highway_breakdown.highway_breakdown.flag_truck_under_maintenance",
+            "transport_logistics.transport_logistics.doctype.highway_breakdown.highway_breakdown.notify_breakdown",
+        ],
+        "on_submit": [
+            "transport_logistics.transport_logistics.doctype.highway_breakdown.highway_breakdown.restore_truck_status",
+            "transport_logistics.transport_logistics.gl_utils.post_breakdown_to_gl",
+        ],
+        "on_cancel": "transport_logistics.transport_logistics.gl_utils.cancel_linked_journal_entry",
+    },
     "Driver Safety Incident": {
         "validate": "transport_logistics.transport_logistics.doctype.driver_safety_incident.driver_safety_incident.default_points_if_unset",
         "on_submit": "transport_logistics.transport_logistics.doctype.driver_safety_incident.driver_safety_incident.notify_high_severity",
