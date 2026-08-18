@@ -4,21 +4,40 @@
 """
 Live GPS tracking integration.
 
-Currently supports Traccar (traccar.org) — a free, self-hosted or cloud GPS
-platform that speaks the protocol used by most cheap GPS/GSM tracker
-hardware (the kind typically fitted to trucks in Kenya/East Africa). If you
-use a different platform, add a small function here that maps its API
-response into the same (device_id, lat, lon, speed_kmh, odometer_km) shape
-consumed by sync_truck_locations() below, and branch on
-settings.gps_provider.
+Currently fully implemented for Traccar (traccar.org) — a free, self-hosted
+or cloud GPS platform that speaks the protocol used by most cheap GPS/GSM
+tracker hardware (the kind typically fitted to trucks in Kenya/East
+Africa).
+
+iSpy Africa and Safetrac Limited are also selectable as providers, but
+their fetch functions below are STUBS — neither company publishes a public
+API reference, so there is nothing to safely implement against yet. Before
+filling these in, get the following from the vendor (ask your account
+contact, since this typically isn't handed out except to paying clients):
+  1. API base URL and whether it's REST/JSON
+  2. Authentication method (API key / username-password / OAuth) and
+     whether it's per-account or per-device
+  3. The endpoint that returns live positions, and what fields it
+     includes (need at minimum: device ID, latitude, longitude,
+     timestamp; ideally also speed and odometer/total distance)
+  4. How a position ties back to a specific vehicle (device ID / IMEI /
+     SIM number) — this becomes what you enter in Truck.gps_device_id
+  5. Any rate limits, which determine a safe polling interval
+
+Once you have that, fill in _fetch_ispy_data() / _fetch_safetrac_data()
+below to return the same shape _fetch_traccar_data() does — a dict keyed
+by device ID -> {latitude, longitude, speed_kmh, odometer_km} — and
+everything else (sync scheduling, odometer safety limits, Truck update
+logic, the Sync Now button) works unchanged, since it's provider-agnostic
+by design.
 
 What this does, on a schedule (see hooks.py `scheduler_events`) or on
 demand (Sync Now button on the Truck list/form):
 
-  1. Logs into the configured Traccar server.
+  1. Logs into the configured GPS provider.
   2. Fetches devices + their latest positions.
   3. Matches each Truck (where `enable_gps_tracking` is checked) to a
-     device by `gps_device_id` == Traccar's device `uniqueId`.
+     device by `gps_device_id`.
   4. Updates the Truck's last_latitude/last_longitude/gps_location/
      last_gps_update/last_gps_speed_kmh.
   5. If the device reports a total distance (odometer) attribute, converts
@@ -27,9 +46,9 @@ demand (Sync Now button on the Truck list/form):
      sanity limit (protects against device resets/glitches silently
      corrupting fuel-efficiency and utilization reports).
 
-Configure the server URL/credentials in Transport Logistics Settings, then
-tick "Track this Truck via GPS" + set the Device ID on each Truck you want
-synced.
+Configure the provider/server URL/credentials in Transport Logistics
+Settings, then tick "Track this Truck via GPS" + set the Device ID on each
+Truck you want synced.
 """
 
 import frappe
@@ -96,6 +115,45 @@ def _fetch_traccar_data(settings):
 	return data_by_unique_id
 
 
+def _fetch_ispy_data(settings):
+	"""STUB — not implemented. iSpy Africa (i-spyafrica.com, Mombasa) does
+	not publish a public API reference. Contact your account rep for the
+	base URL, auth method, and positions endpoint (see the checklist in
+	this module's docstring), then implement this to return the same
+	{device_id: {latitude, longitude, speed_kmh, odometer_km}} shape as
+	_fetch_traccar_data() above."""
+	frappe.throw(
+		"iSpy Africa integration is not yet implemented — no public API "
+		"documentation exists for this provider. Contact your iSpy Africa "
+		"account representative for API access details, then this can be "
+		"wired in. See the comment at the top of gps_tracking.py for exactly "
+		"what's needed."
+	)
+
+
+def _fetch_safetrac_data(settings):
+	"""STUB — not implemented. Safetrac Limited (safetrac.co.ke, Nairobi)
+	does not publish a public API reference. Contact your account rep for
+	the base URL, auth method, and positions endpoint (see the checklist
+	in this module's docstring), then implement this to return the same
+	{device_id: {latitude, longitude, speed_kmh, odometer_km}} shape as
+	_fetch_traccar_data() above."""
+	frappe.throw(
+		"Safetrac integration is not yet implemented — no public API "
+		"documentation exists for this provider. Contact your Safetrac "
+		"account representative for API access details, then this can be "
+		"wired in. See the comment at the top of gps_tracking.py for exactly "
+		"what's needed."
+	)
+
+
+PROVIDER_FETCHERS = {
+	"Traccar": _fetch_traccar_data,
+	"iSpy Africa": _fetch_ispy_data,
+	"Safetrac": _fetch_safetrac_data,
+}
+
+
 def sync_truck_locations():
 	"""Scheduled (and manually triggerable) job: pulls live positions for
 	every GPS-enabled Truck and updates location + odometer."""
@@ -112,11 +170,11 @@ def sync_truck_locations():
 		return
 
 	try:
-		if settings.gps_provider == "Traccar":
-			live_data = _fetch_traccar_data(settings)
-		else:
+		fetcher = PROVIDER_FETCHERS.get(settings.gps_provider)
+		if not fetcher:
 			frappe.log_error(f"Unsupported GPS provider: {settings.gps_provider}", "GPS Tracking Sync")
 			return
+		live_data = fetcher(settings)
 	except Exception:
 		frappe.log_error(frappe.get_traceback(), "GPS Tracking Sync - Fetch Failed")
 		return

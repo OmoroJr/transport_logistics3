@@ -295,10 +295,10 @@
    "fieldname": "gps_provider",
    "fieldtype": "Select",
    "label": "Provider",
-   "options": "Traccar",
+   "options": "Traccar\niSpy Africa\nSafetrac",
    "default": "Traccar",
    "depends_on": "eval:doc.enable_gps_tracking",
-   "description": "Traccar is a free, self-hosted (or cloud) GPS tracking platform (traccar.org) that speaks the protocol used by most GPS/GSM tracker hardware. If you use a different platform, its REST API can be wired in the same way \u2014 ask your developer."
+   "description": "Traccar is fully supported today (a free, self-hosted or cloud GPS platform, traccar.org). iSpy Africa and Safetrac are listed as options but NOT yet wired up \u2014 their fetch functions in gps_tracking.py are stubs, since neither publishes a public API reference. Selecting one of them will fail sync attempts with a clear error until a developer implements the fetch function using API details obtained directly from that vendor."
   },
   {
    "fieldname": "gps_server_url",
