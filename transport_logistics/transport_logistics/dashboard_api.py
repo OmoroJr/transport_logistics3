@@ -54,6 +54,7 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 	)
 	avg_efficiency = (totals["distance_km"] / totals["fuel_qty"]) if totals["fuel_qty"] else 0
 	cost_per_km = (total_cost / totals["distance_km"]) if totals["distance_km"] else 0
+	cost_per_trip = (total_cost / totals["trip_count"]) if totals["trip_count"] else 0
 	profit_loss = totals["revenue"] - total_cost
 	profit_per_km = (profit_loss / totals["distance_km"]) if totals["distance_km"] else 0
 
@@ -62,6 +63,7 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 
 	return {
 		"distance_km": totals["distance_km"],
+		"trip_count": totals["trip_count"],
 		"fuel_qty": totals["fuel_qty"],
 		"fuel_cost": totals["fuel_cost"],
 		"tyre_cost": totals["tyre_cost"],
@@ -72,6 +74,7 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 		"total_cost": total_cost,
 		"avg_efficiency": avg_efficiency,
 		"cost_per_km": cost_per_km,
+		"cost_per_trip": cost_per_trip,
 		"revenue": totals["revenue"],
 		"profit_loss": profit_loss,
 		"profit_per_km": profit_per_km,
@@ -124,13 +127,29 @@ def _zero_totals():
 	return {
 		"distance_km": 0.0, "fuel_qty": 0.0, "fuel_cost": 0.0, "tyre_cost": 0.0,
 		"maintenance_cost": 0.0, "accident_cost": 0.0, "other_expense_cost": 0.0,
-		"depreciation_cost": 0.0, "revenue": 0.0,
+		"depreciation_cost": 0.0, "revenue": 0.0, "trip_count": 0,
 	}
+
+
+def _get_trip_count(truck, from_date, to_date):
+	"""Counts Completed trips in range — same scope (status='Completed',
+	trip_date between from/to) as _get_trip_distance() above, so the trip
+	count and the Truck Trip-sourced distance figure are always counting
+	the same underlying set of trips."""
+	return frappe.db.count(
+		"Truck Trip",
+		filters={
+			"truck": truck,
+			"status": "Completed",
+			"trip_date": ["between", [from_date, to_date]],
+		},
+	)
 
 
 def _accumulate(totals, truck_row, from_date, to_date, period_days):
 	name = truck_row["name"]
 	totals["distance_km"] += _get_total_distance(name, from_date, to_date)
+	totals["trip_count"] += _get_trip_count(name, from_date, to_date)
 	fuel_qty, fuel_cost = get_fuel(name, from_date, to_date)
 	totals["fuel_qty"] += fuel_qty
 	totals["fuel_cost"] += fuel_cost
@@ -167,9 +186,10 @@ def _build_breakdown(totals, total_cost):
 
 
 def _build_trend(trucks, to_date):
-	"""Trailing N months of Total Cost vs Revenue, ending at to_date's month,
-	independent of the from_date/to_date range used for the KPI cards above —
-	this gives useful historical context even when a single month is selected."""
+	"""Trailing N months of Total Cost vs Revenue vs Trip Count, ending at
+	to_date's month, independent of the from_date/to_date range used for
+	the KPI cards above — this gives useful historical context even when a
+	single month is selected."""
 	anchor = get_last_day(getdate(to_date))
 	trend = []
 
@@ -180,6 +200,7 @@ def _build_trend(trucks, to_date):
 
 		month_total_cost = 0.0
 		month_revenue = 0.0
+		month_trip_count = 0
 		for t in trucks:
 			name = t["name"]
 			fuel_qty, fuel_cost = get_fuel(name, month_start, month_end)
@@ -193,11 +214,13 @@ def _build_trend(trucks, to_date):
 			)
 			month_total_cost += cost
 			month_revenue += get_revenue(name, month_start, month_end)
+			month_trip_count += _get_trip_count(name, month_start, month_end)
 
 		trend.append({
 			"month": f"{calendar.month_abbr[month_end.month]} {month_end.year}",
 			"total_cost": month_total_cost,
 			"revenue": month_revenue,
+			"trip_count": month_trip_count,
 		})
 
 	return trend

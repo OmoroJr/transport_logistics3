@@ -6,6 +6,7 @@ const TCD_FONTAWESOME_CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/font-awe
 
 const KPI_ICONS = {
 	distance: "fa-solid fa-road",
+	trips: "fa-solid fa-route",
 	fuel: "fa-solid fa-gas-pump",
 	maintenance: "fa-solid fa-screwdriver-wrench",
 	tyre: "fa-solid fa-dharmachakra",
@@ -20,6 +21,7 @@ const KPI_ICONS = {
 // computed figure like Depreciation with no single source doctype).
 const KPI_COMPONENTS = {
 	distance: { component: "distance", list_doctype: "Truck Trip" },
+	trips: { component: "distance", list_doctype: "Truck Trip" },
 	fuel: { component: "fuel", list_doctype: "Truck Fuel Log" },
 	maintenance: { component: "maintenance", list_doctype: "Truck Maintenance Log" },
 	tyre: { component: "tyre", list_doctype: "Tyre Movement Log" },
@@ -121,6 +123,7 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 
 		render_kpi_row(data);
 		render_panel_row(data);
+		render_trips_trend_panel(data);
 	}
 
 	function icon_html(key) {
@@ -133,6 +136,7 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 	function render_kpi_row(data) {
 		const kpis = [
 			{ key: "distance", label: __("TOTAL DISTANCE"), value: `${fmt_num(data.distance_km)} km`, icon: "distance" },
+			{ key: "trips", label: __("NUMBER OF TRIPS"), value: fmt_num(data.trip_count), icon: "trips" },
 			{ key: "fuel", label: __("FUEL COST"), value: fmt_money(data.fuel_cost), icon: "fuel" },
 			{ key: "maintenance", label: __("MAINTENANCE COST"), value: fmt_money(data.maintenance_cost), icon: "maintenance" },
 			{ key: "tyre", label: __("TYRE COST"), value: fmt_money(data.tyre_cost), icon: "tyre" },
@@ -340,6 +344,7 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 		const rows = [
 			[__("Fuel Efficiency"), `${data.avg_efficiency.toFixed(2)} km/L`, ""],
 			[__("Cost per KM"), fmt_money(data.cost_per_km), ""],
+			[__("Cost per Trip"), fmt_money(data.cost_per_trip), ""],
 			[__("Revenue"), fmt_money(data.revenue), "tcd-green"],
 			[__("Profit / Loss"), fmt_money(data.profit_loss), profit_class],
 			[__("Profit per KM"), fmt_money(data.profit_per_km), profit_class],
@@ -379,6 +384,28 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 			height: 230,
 			colors: ["#2E86C1", "#27AE60"],
 			lineOptions: { hideDots: 0, regionFill: 0 },
+			axisOptions: { xAxisMode: "tick" },
+		});
+	}
+
+	function render_trips_trend_panel(data) {
+		const $row = $('<div class="tcd-trips-row"></div>').appendTo($body);
+		const $panel = $(`<div class="tcd-panel tcd-trips-trend"><h4>${__("Trips per Month")}</h4></div>`).appendTo($row);
+		const $chartHolder = $('<div class="tcd-trend-chart"></div>').appendTo($panel);
+
+		if (!data.trend.some((t) => t.trip_count)) {
+			$chartHolder.html(`<div class="tcd-empty">${__("No completed trips in this period")}</div>`);
+			return;
+		}
+
+		new frappe.Chart($chartHolder[0], {
+			data: {
+				labels: data.trend.map((t) => t.month),
+				datasets: [{ name: __("Trips"), values: data.trend.map((t) => t.trip_count) }],
+			},
+			type: "bar",
+			height: 180,
+			colors: ["#8E44AD"],
 			axisOptions: { xAxisMode: "tick" },
 		});
 	}
@@ -445,6 +472,12 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 				display: grid;
 				grid-template-columns: 1fr 1fr 1.3fr;
 				gap: 16px;
+			}
+			.tcd-trips-row {
+				display: grid;
+				grid-template-columns: 1fr;
+				gap: 16px;
+				margin-top: 16px;
 			}
 			.tcd-panel {
 				background: var(--card-bg, #fff);

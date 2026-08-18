@@ -32,6 +32,10 @@
   "replacement_truck",
   "resolved_datetime",
   "downtime_hours",
+  "section_break_mechanics",
+  "mechanics_attending",
+  "column_break_mechanics",
+  "external_mechanic_details",
   "section_break_cost",
   "repair_cost",
   "towing_cost",
@@ -220,6 +224,28 @@
    "label": "Downtime (Hours)",
    "read_only": 1,
    "precision": "1"
+  },
+  {
+   "fieldname": "section_break_mechanics",
+   "fieldtype": "Section Break",
+   "label": "Mechanic(s) Attending"
+  },
+  {
+   "fieldname": "mechanics_attending",
+   "fieldtype": "Table MultiSelect",
+   "label": "In-House Mechanic(s)",
+   "options": "Highway Breakdown Mechanic",
+   "description": "Select any of your own Employees sent to attend this breakdown. For a third-party garage/vendor's crew, use the field alongside instead."
+  },
+  {
+   "fieldname": "column_break_mechanics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "external_mechanic_details",
+   "fieldtype": "Small Text",
+   "label": "External Mechanic / Garage Details",
+   "description": "Name(s) and contact of any third-party mechanic or garage crew attending, if not one of your own Employees."
   },
   {
    "fieldname": "section_break_cost",
