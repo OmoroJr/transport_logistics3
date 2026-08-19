@@ -7,6 +7,9 @@
  "field_order": [
   "truck",
   "source",
+  "reason_for_fuelling",
+  "truck_trip",
+  "authority_to_load",
   "fuel_dispensing",
   "date",
   "driver",
@@ -46,6 +49,33 @@
    "default": "External Purchase",
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "reason_for_fuelling",
+   "fieldtype": "Select",
+   "label": "Reason for Fuelling",
+   "options": "For Trip\nYard / Standby\nGenerator\nOther",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "truck_trip",
+   "fieldtype": "Link",
+   "label": "Truck Trip",
+   "options": "Truck Trip",
+   "depends_on": "eval:doc.reason_for_fuelling=='For Trip'",
+   "mandatory_depends_on": "eval:doc.reason_for_fuelling=='For Trip'",
+   "description": "The trip this fuelling is for."
+  },
+  {
+   "fieldname": "authority_to_load",
+   "fieldtype": "Link",
+   "label": "Authority to Load",
+   "options": "Authority to Load",
+   "depends_on": "eval:doc.reason_for_fuelling=='For Trip'",
+   "mandatory_depends_on": "eval:doc.reason_for_fuelling=='For Trip'",
+   "description": "Attach the Authority to Load issued for this trip. Must be submitted, for the same truck and trip, and have all checks passed."
   },
   {
    "fieldname": "fuel_dispensing",

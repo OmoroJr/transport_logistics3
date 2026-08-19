@@ -7,7 +7,55 @@ from frappe.model.document import Document
 
 class TruckFuelLog(Document):
 	def validate(self):
+		validate_reason_for_fuelling(self)
 		set_computed_fields(self)
+
+
+def validate_reason_for_fuelling(doc):
+	"""If fuelling is for a trip, the Authority to Load for that trip must be attached
+	and must check out (right truck, right trip, submitted, all checks passed)."""
+	if doc.reason_for_fuelling != "For Trip":
+		return
+
+	if not doc.truck_trip:
+		frappe.throw("Truck Trip is required when Reason for Fuelling is 'For Trip'.")
+
+	if not doc.authority_to_load:
+		frappe.throw(
+			"Please attach the Authority to Load for this trip. "
+			"Fuelling for a trip is not allowed without an approved Authority to Load."
+		)
+
+	atl = frappe.db.get_value(
+		"Authority to Load",
+		doc.authority_to_load,
+		["truck", "truck_trip", "docstatus", "all_checks_passed"],
+		as_dict=True,
+	)
+
+	if not atl:
+		frappe.throw(f"Authority to Load {doc.authority_to_load} not found.")
+
+	if atl.truck != doc.truck:
+		frappe.throw(
+			f"Authority to Load {doc.authority_to_load} was issued for truck {atl.truck}, "
+			f"not {doc.truck}."
+		)
+
+	if atl.truck_trip != doc.truck_trip:
+		frappe.throw(
+			f"Authority to Load {doc.authority_to_load} was issued for Truck Trip "
+			f"{atl.truck_trip}, not {doc.truck_trip}."
+		)
+
+	if atl.docstatus != 1:
+		frappe.throw(f"Authority to Load {doc.authority_to_load} must be submitted before it can be attached.")
+
+	if not atl.all_checks_passed:
+		frappe.throw(
+			f"Authority to Load {doc.authority_to_load} did not pass all compliance checks "
+			"and cannot be used to authorize fuelling for this trip."
+		)
 
 
 def set_computed_fields(doc, method=None):
