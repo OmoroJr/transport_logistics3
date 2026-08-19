@@ -5,10 +5,18 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
 
+# Status values, reached in this order, that are worth a customer-facing
+# WhatsApp update. Booked/Documents Received/Customs Entry Filed/Customs
+# Released are internal processing milestones the client doesn't need a
+# message for; these four are the ones they're actually waiting on.
+CUSTOMER_NOTIFY_STATUSES = ("Customs Released", "In Transit", "Delivered", "Completed")
+
 
 class Shipment(Document):
 	def validate(self):
 		compute_charge_totals(self)
+		auto_fill_client_whatsapp_number(self)
+		notify_client_on_status_change(self)
 
 
 def compute_charge_totals(doc, method=None):
@@ -21,6 +29,69 @@ def compute_charge_totals(doc, method=None):
 			company_cost += flt(row.amount)
 	doc.total_billable = billable
 	doc.total_company_cost = company_cost
+
+
+def auto_fill_client_whatsapp_number(doc, method=None):
+	"""Fills Client WhatsApp Number from the client's primary Contact mobile
+	number, if one is on file and the field is still blank. Only fills in,
+	never overwrites — the same "don't clobber a manual correction" rule
+	used elsewhere in this app (see e.g. Highway Breakdown's GPS
+	auto-fill)."""
+	if doc.client_whatsapp_number or not doc.client:
+		return
+
+	primary_contact = frappe.db.get_value(
+		"Dynamic Link",
+		{"link_doctype": "Customer", "link_name": doc.client, "parenttype": "Contact"},
+		"parent",
+	)
+	if not primary_contact:
+		return
+
+	mobile = frappe.db.get_value("Contact", primary_contact, "mobile_no")
+	if mobile:
+		doc.client_whatsapp_number = mobile
+
+
+def notify_client_on_status_change(doc, method=None):
+	"""Sends a WhatsApp update to the client when Status moves to one of the
+	milestones in CUSTOMER_NOTIFY_STATUSES. Runs in validate() (before this
+	save is committed) so the previous status can still be read from the
+	database for comparison — same pattern used for status transitions in
+	Truck Trip. Silently does nothing if WhatsApp isn't enabled, customer
+	notifications are switched off, or there's no number to send to."""
+	if doc.status not in CUSTOMER_NOTIFY_STATUSES:
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Shipment", doc.name, "status")
+		if previous_status == doc.status:
+			return
+
+	if not doc.client_whatsapp_number:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_whatsapp and settings.whatsapp_notify_customer):
+		return
+
+	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+	status_messages = {
+		"Customs Released": f"Good news — your shipment {doc.name} has cleared customs and is being prepared for onward transport.",
+		"In Transit": f"Your shipment {doc.name} is now in transit" + (f" to {doc.port_of_discharge}." if doc.port_of_discharge else "."),
+		"Delivered": f"Your shipment {doc.name} has been delivered. Thank you for shipping with us.",
+		"Completed": f"Your shipment {doc.name} is now fully completed and closed out.",
+	}
+	message = status_messages.get(doc.status, f"Update on your shipment {doc.name}: status is now {doc.status}.")
+
+	send_whatsapp_message(
+		doc.client_whatsapp_number,
+		message,
+		reference_doctype="Shipment",
+		reference_name=doc.name,
+		settings=settings,
+	)
 
 
 @frappe.whitelist()

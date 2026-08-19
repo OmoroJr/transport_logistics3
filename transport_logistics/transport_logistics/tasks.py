@@ -117,6 +117,32 @@ def notify_users(subject, message, reference_doctype, reference_name, priority="
 			}
 		).insert(ignore_permissions=True)
 
+	_notify_users_whatsapp(subject, message, reference_doctype, reference_name, user_list)
+
+
+def _notify_users_whatsapp(subject, message, reference_doctype, reference_name, user_list):
+	"""Best-effort WhatsApp companion to the Notification Log/ToDo above, to
+	every user in user_list who has a Mobile No on their User record.
+	Deduplication against re-fired hooks is handled inside
+	send_whatsapp_message() itself (same reference_doctype/name/message)."""
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_whatsapp and settings.whatsapp_notify_internal_alerts):
+		return
+
+	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+	for user in user_list:
+		mobile_no = frappe.db.get_value("User", user, "mobile_no")
+		if not mobile_no:
+			continue
+		send_whatsapp_message(
+			mobile_no,
+			f"{subject}\n\n{message}",
+			reference_doctype=reference_doctype,
+			reference_name=reference_name,
+			settings=settings,
+		)
+
 
 def check_driver_license_expiry():
 	"""Same idea as check_document_expiry() above, but for drivers' Driving

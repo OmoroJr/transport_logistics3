@@ -110,3 +110,31 @@ def _date_ok(expiry_date, check_date, label, failures):
 		failures.append(f"{label} expired on {expiry_date}.")
 		return 0
 	return 1
+
+
+def notify_driver(doc, method=None):
+	"""Fires on_submit. before_submit already enforced all_checks_passed, so
+	by the time this runs it's always a pass — this simply tells the driver
+	they're cleared to load, without them needing to check the desk."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_whatsapp and settings.whatsapp_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+	message = (
+		f"Authority to Load {doc.name} approved for Truck {doc.truck}"
+		f"{' — Trip ' + doc.truck_trip if doc.truck_trip else ''}. "
+		f"{'Destination: ' + doc.destination + '. ' if doc.destination else ''}"
+		"You are cleared to load."
+	)
+	send_whatsapp_message(
+		cell_number, message, reference_doctype="Authority to Load", reference_name=doc.name, settings=settings
+	)

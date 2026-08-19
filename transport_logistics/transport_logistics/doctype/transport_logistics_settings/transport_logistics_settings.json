@@ -50,7 +50,24 @@
   "gps_username",
   "gps_password",
   "section_gps_safety",
-  "gps_odometer_jump_limit_km"
+  "gps_odometer_jump_limit_km",
+  "section_whatsapp",
+  "enable_whatsapp",
+  "whatsapp_phone_number_id",
+  "whatsapp_business_account_id",
+  "column_break_whatsapp",
+  "whatsapp_access_token",
+  "whatsapp_api_version",
+  "default_country_code",
+  "section_whatsapp_channels",
+  "whatsapp_notify_internal_alerts",
+  "whatsapp_notify_driver",
+  "column_break_whatsapp_channels",
+  "whatsapp_notify_customer",
+  "section_whatsapp_webhook",
+  "whatsapp_webhook_verify_token",
+  "section_whatsapp_test",
+  "whatsapp_test_number"
  ],
  "fields": [
   {
@@ -338,6 +355,119 @@
    "label": "Reject Odometer Jump Above (Km)",
    "default": "1000",
    "description": "If a device's odometer reading jumps by more than this many Km since the last sync, it is treated as a device glitch/reset and ignored (logged to Error Log) rather than applied to the Truck. The odometer is also never allowed to move backward."
+  },
+  {
+   "fieldname": "section_whatsapp",
+   "fieldtype": "Section Break",
+   "label": "WhatsApp Integration (Meta Cloud API)"
+  },
+  {
+   "fieldname": "enable_whatsapp",
+   "fieldtype": "Check",
+   "label": "Enable WhatsApp Integration",
+   "default": "0",
+   "description": "Requires a Meta Business + WhatsApp Business Platform app (business.facebook.com) with a registered phone number and a permanent access token. All sending is best-effort: a failed WhatsApp send is logged to WhatsApp Message Log and never blocks the document that triggered it."
+  },
+  {
+   "fieldname": "whatsapp_phone_number_id",
+   "fieldtype": "Data",
+   "label": "Phone Number ID",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "mandatory_depends_on": "eval:doc.enable_whatsapp",
+   "description": "From your WhatsApp Business Platform app's Cloud API dashboard, not the phone number itself."
+  },
+  {
+   "fieldname": "whatsapp_business_account_id",
+   "fieldtype": "Data",
+   "label": "WhatsApp Business Account ID",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "description": "Optional — only needed for managing Message Templates via the API. Not required for sending or receiving messages."
+  },
+  {
+   "fieldname": "column_break_whatsapp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "whatsapp_access_token",
+   "fieldtype": "Password",
+   "label": "Access Token",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "mandatory_depends_on": "eval:doc.enable_whatsapp",
+   "description": "Use a permanent System User token from a Meta Business integration — the default 24-hour test token will stop working after a day."
+  },
+  {
+   "fieldname": "whatsapp_api_version",
+   "fieldtype": "Data",
+   "label": "Graph API Version",
+   "default": "v21.0",
+   "depends_on": "eval:doc.enable_whatsapp"
+  },
+  {
+   "fieldname": "default_country_code",
+   "fieldtype": "Data",
+   "label": "Default Country Code",
+   "default": "254",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "description": "Digits only, no '+'. A phone number entered starting with a single '0' (e.g. 0712345678) has the '0' replaced with this code before sending."
+  },
+  {
+   "fieldname": "section_whatsapp_channels",
+   "fieldtype": "Section Break",
+   "label": "Notification Channels",
+   "depends_on": "eval:doc.enable_whatsapp"
+  },
+  {
+   "fieldname": "whatsapp_notify_internal_alerts",
+   "fieldtype": "Check",
+   "label": "Internal Alerts (breakdowns, accidents, expiry, compliance)",
+   "default": "1",
+   "description": "Sent alongside the existing in-app Notification/ToDo, to every enabled user holding the Notify Role, using each User's Mobile No."
+  },
+  {
+   "fieldname": "whatsapp_notify_driver",
+   "fieldtype": "Check",
+   "label": "Driver-Facing (trip dispatch, Authority to Load result, fuel confirmation)",
+   "default": "1",
+   "description": "Sent to the driver's Employee Cell Number."
+  },
+  {
+   "fieldname": "column_break_whatsapp_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "whatsapp_notify_customer",
+   "fieldtype": "Check",
+   "label": "Customer-Facing (Shipment status updates)",
+   "default": "0",
+   "description": "Sent to the WhatsApp Number set on the Shipment. Off by default — turn on once you've confirmed customers are comfortable receiving WhatsApp updates."
+  },
+  {
+   "fieldname": "section_whatsapp_webhook",
+   "fieldtype": "Section Break",
+   "label": "Webhook (Optional — inbound messages & delivery status)",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "whatsapp_webhook_verify_token",
+   "fieldtype": "Data",
+   "label": "Webhook Verify Token",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "description": "Any string you choose — enter the same value in Meta's webhook subscription setup. Webhook URL: https://your-site/api/method/transport_logistics.transport_logistics.whatsapp.webhook"
+  },
+  {
+   "fieldname": "section_whatsapp_test",
+   "fieldtype": "Section Break",
+   "label": "Test Connection",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "whatsapp_test_number",
+   "fieldtype": "Data",
+   "label": "Test Number",
+   "depends_on": "eval:doc.enable_whatsapp",
+   "description": "Enter a WhatsApp number (with or without country code) and use the 'Send Test Message' button in the toolbar."
   }
  ],
  "index_web_pages_for_search": 1,

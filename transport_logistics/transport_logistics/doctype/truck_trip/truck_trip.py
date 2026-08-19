@@ -25,6 +25,7 @@ class TruckTrip(Document):
 		validate_pretrip_fuel(self)
 		validate_offload_data(self)
 		set_revenue_from_sales_order(self)
+		notify_driver_trip_started(self)
 
 
 def compute_distance(doc, method=None):
@@ -316,6 +317,40 @@ def validate_delivery_number_matches_delivery_note(doc, method=None):
 			"for the same delivery that left with this trip — verify the physical document "
 			"and correct the entry, or investigate if it genuinely doesn't match."
 		)
+
+
+def notify_driver_trip_started(doc, method=None):
+	"""Fires only on the Planned -> Ongoing transition (same trigger point
+	validate_loading_authority uses above), i.e. once a submitted Authority
+	to Load already exists for this trip — so the driver is only paged once
+	the truck is actually cleared to depart, not on every edit of a Planned
+	trip."""
+	if doc.status != "Ongoing" or not doc.driver:
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_whatsapp and settings.whatsapp_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+	message = (
+		f"Trip {doc.name} dispatched — Truck {doc.truck}, "
+		f"{doc.origin or 'origin not set'} to {doc.destination or 'destination not set'}."
+		+ (f" Delivery Note: {doc.delivery_note}." if doc.delivery_note else "")
+	)
+	send_whatsapp_message(
+		cell_number, message, reference_doctype="Truck Trip", reference_name=doc.name, settings=settings
+	)
 
 
 @frappe.whitelist()

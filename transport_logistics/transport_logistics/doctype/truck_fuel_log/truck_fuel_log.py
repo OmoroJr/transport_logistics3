@@ -91,6 +91,34 @@ def set_computed_fields(doc, method=None):
 		doc.fuel_efficiency_km_per_litre = 0
 
 
+def notify_driver_fuel_confirmation(doc, method=None):
+	"""Fires on_submit. Confirms to the driver what was fuelled, for their
+	own record — most useful for 'For Trip' fuelling, but sent regardless
+	of reason since any driver present at the pump likely wants the
+	confirmation."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_whatsapp and settings.whatsapp_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+	message = (
+		f"Fuel log {doc.name} confirmed — {doc.fuel_qty_litres} litres for Truck {doc.truck}"
+		f"{' (' + doc.reason_for_fuelling + ')' if doc.reason_for_fuelling else ''}. "
+		f"Total: {doc.total_amount}."
+	)
+	send_whatsapp_message(
+		cell_number, message, reference_doctype="Truck Fuel Log", reference_name=doc.name, settings=settings
+	)
+
+
 def update_truck_odometer(doc, method=None):
 	"""Keep Truck.current_odometer in sync with the latest submitted fuel log."""
 	truck = frappe.get_doc("Truck", doc.truck)

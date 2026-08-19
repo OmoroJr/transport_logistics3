@@ -35,6 +35,7 @@ ERPNext 16, for an owned-fleet transport operation, with a built-in
 | **Fuel Tank** | Bulk fuel storage master, bridging to an ERPNext Warehouse + Item for live stock/valuation |
 | **Bulk Fuel Purchase** | Records fuel delivered into a tank — creates a Stock Entry (Material Receipt) |
 | **Fuel Dispensing** | Records fuel dispensed from a tank to a truck — creates a Stock Entry (Material Issue) + an auto Truck Fuel Log |
+| **WhatsApp Message Log** | Audit trail of every outgoing/incoming WhatsApp message (Meta Cloud API), with delivery status |
 
 Two custom roles are shipped as fixtures: **Transport Manager** (full rights)
 and **Transport User** (data entry + view reports, no delete).
@@ -609,6 +610,47 @@ of them (Dashboard Chart list / Number Card list) to change the color,
 timespan, chart type (bar/line/donut/pie), or filters to match how you
 actually want to slice it. Nothing here is hardcoded into the app's code.
 
+## New: WhatsApp notifications (Meta Cloud API)
+
+Optional integration with Meta's official WhatsApp Business Cloud API
+(`transport_logistics/whatsapp.py`), covering three independently-toggled
+channels — set up under **Transport Logistics Settings → WhatsApp
+Integration**:
+
+| Channel | Sent to | Sent when |
+|---|---|---|
+| **Internal alerts** | Every enabled user holding the Notify Role (via their User → Mobile No) | Same trigger points as the existing Notification Log/ToDo — Highway Breakdown, Major/Fatal Accident Report, High-severity Driver Safety Incident, and the daily compliance/document expiry check |
+| **Driver-facing** | The driver's Employee → Cell Number | Authority to Load submitted (cleared to load), Truck Trip dispatched (Planned → Ongoing), Truck Fuel Log submitted (fuel confirmation) |
+| **Customer-facing** | Shipment → Client WhatsApp Number (auto-filled from the client's primary Contact if on file) | Shipment status reaches Customs Released, In Transit, Delivered, or Completed |
+
+### Setup
+
+1. Create a Meta Business + WhatsApp Business Platform app at
+   [business.facebook.com](https://business.facebook.com), with a
+   registered phone number.
+2. On **Transport Logistics Settings**, turn on **Enable WhatsApp
+   Integration** and fill in:
+   - **Phone Number ID** (from the Cloud API dashboard)
+   - **Access Token** — use a **permanent** token from a System User /
+     Business integration, not the default 24-hour test token
+   - **Default Country Code** — for turning locally-entered numbers like
+     `0712345678` into `254712345678`
+3. Tick whichever of the three **Notification Channels** you want live.
+4. Save, then use **Send Test Message** (toolbar button, once a **Test
+   Number** is filled in) to confirm it's working.
+5. Optional: to receive delivery-status updates and inbound replies,
+   register a webhook in Meta App settings pointing at
+   `https://your-site/api/method/transport_logistics.transport_logistics.whatsapp.webhook`,
+   with the **Webhook Verify Token** you set in Settings.
+
+Every send is logged to **WhatsApp Message Log** (Sent/Failed/Delivered/Read,
+with the error message on failure) — sending is always best-effort and never
+blocks the document that triggered it. Outside Meta's 24-hour customer
+session window, freeform text only reaches numbers that messaged your
+business number first; `send_whatsapp_template()` in `whatsapp.py` is there
+for sending pre-approved Message Templates to reach anyone regardless of
+window.
+
 ## Suggested next steps (not built yet)
 
 - Route GL postings through Purchase Invoice + Supplier instead of plain
@@ -617,5 +659,8 @@ actually want to slice it. Nothing here is hardcoded into the app's code.
   customers directly from ERPNext.
 - Email (not just in-app notification) for expiry alerts — straightforward
   to add via `frappe.sendmail()` in `tasks.py` if you want it.
+- Inbound WhatsApp conversation handling (e.g. a driver replying "CONFIRM")
+  — the webhook already logs incoming messages to WhatsApp Message Log;
+  acting on them is the natural next layer.
 
 Happy to build any of the above — just say which one.

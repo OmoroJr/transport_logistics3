@@ -15,6 +15,7 @@ doctype_js = {
     "Trailer": "transport_logistics/doctype/trailer/trailer.js",
     "Tyre": "transport_logistics/doctype/tyre/tyre.js",
     "Employee": "public/js/employee.js",
+    "Transport Logistics Settings": "transport_logistics/doctype/transport_logistics_settings/transport_logistics_settings.js",
 }
 
 doctype_list_js = {
@@ -28,6 +29,7 @@ doc_events = {
         "on_submit": [
             "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.update_truck_odometer",
             "transport_logistics.transport_logistics.gl_utils.post_fuel_log_to_gl",
+            "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.notify_driver_fuel_confirmation",
         ],
         "on_cancel": [
             "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.update_truck_odometer",
@@ -59,6 +61,7 @@ doc_events = {
     },
     "Authority to Load": {
         "validate": "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.run_compliance_checks",
+        "on_submit": "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.notify_driver",
     },
     "Accident Report": {
         "validate": "transport_logistics.transport_logistics.doctype.accident_report.accident_report.set_cost_fields",
