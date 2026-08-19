@@ -15,6 +15,13 @@ frappe.ui.form.on("Truck Trip", {
 			if (frm.doc.customer) filters.customer = frm.doc.customer;
 			return { filters };
 		});
+
+		frm.set_query("pre_trip_fuel_log", () => {
+			const filters = { docstatus: 1, full_tank: 1 };
+			if (frm.doc.truck) filters.truck = frm.doc.truck;
+			if (frm.doc.trip_date) filters.date = ["<=", frm.doc.trip_date];
+			return { filters };
+		});
 	},
 
 	start_odometer(frm) { calc_distance(frm); },

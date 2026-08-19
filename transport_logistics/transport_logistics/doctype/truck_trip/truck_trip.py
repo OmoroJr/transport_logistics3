@@ -11,7 +11,7 @@ that both completes the trip and frees the truck up again.
 
 import frappe
 from frappe.model.document import Document
-from frappe.utils import now_datetime, flt
+from frappe.utils import now_datetime, flt, getdate
 
 
 class TruckTrip(Document):
@@ -21,6 +21,8 @@ class TruckTrip(Document):
 		validate_loading_authority(self)
 		auto_create_delivery_note(self)
 		validate_delivery_note_locked(self)
+		validate_pretrip_fuel_log_locked(self)
+		validate_pretrip_fuel(self)
 		validate_offload_data(self)
 		set_revenue_from_sales_order(self)
 
@@ -140,6 +142,78 @@ def auto_create_delivery_note(doc, method=None):
 		)
 
 	doc.delivery_note = dn.name
+
+
+def validate_pretrip_fuel(doc, method=None):
+	"""A truck can't start a trip (status Ongoing) without proof it was
+	fueled up first — a submitted Full Tank Truck Fuel Log, dated on or
+	before departure. This is a real operational safeguard: a truck that
+	leaves the yard on a low tank is exactly the kind of thing that turns
+	into a Highway Breakdown a few hundred Km down the road.
+
+	Locked once set — same reasoning as validate_delivery_note_locked()
+	above: if it could be swapped after the fact, someone could retroactively
+	satisfy this check with an unrelated fuel log instead of what actually
+	happened before departure."""
+	if doc.status != "Ongoing":
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	if not doc.pre_trip_fuel_log:
+		frappe.throw(
+			"Truck Trip cannot start (status Ongoing) without a Pre-Trip Fuel Log — "
+			"link a Full Tank Truck Fuel Log for this truck, dated on or before "
+			"departure, confirming it was fueled up before leaving."
+		)
+
+
+def validate_pretrip_fuel_log_locked(doc, method=None):
+	if doc.is_new():
+		return
+
+	previous = frappe.db.get_value("Truck Trip", doc.name, "pre_trip_fuel_log")
+	if previous and doc.pre_trip_fuel_log != previous:
+		frappe.throw(
+			f"Pre-Trip Fuel Log cannot be changed once set (was {previous}). It represents "
+			"proof the truck was actually fueled before this specific trip departed."
+		)
+
+	if not doc.pre_trip_fuel_log:
+		return
+
+	log = frappe.db.get_value(
+		"Truck Fuel Log",
+		doc.pre_trip_fuel_log,
+		["docstatus", "truck", "full_tank", "date"],
+		as_dict=True,
+	)
+	if not log:
+		frappe.throw(f"Truck Fuel Log {doc.pre_trip_fuel_log} not found.")
+	if log.docstatus != 1:
+		frappe.throw(
+			f"Truck Fuel Log {doc.pre_trip_fuel_log} must be submitted before it can be "
+			"linked as this trip's Pre-Trip Fuel Log."
+		)
+	if log.truck != doc.truck:
+		frappe.throw(
+			f"Truck Fuel Log {doc.pre_trip_fuel_log} is for truck {log.truck}, which doesn't "
+			f"match this trip's truck ({doc.truck})."
+		)
+	if not log.full_tank:
+		frappe.throw(
+			f"Truck Fuel Log {doc.pre_trip_fuel_log} is not marked Full Tank. The Pre-Trip "
+			"Fuel Log must be a full fill-up, not a partial top-up."
+		)
+	if doc.trip_date and log.date and getdate(log.date) > getdate(doc.trip_date):
+		frappe.throw(
+			f"Truck Fuel Log {doc.pre_trip_fuel_log} is dated {log.date}, which is after this "
+			f"trip's date ({doc.trip_date}). The Pre-Trip Fuel Log must be dated on or before "
+			"departure — it can't happen after the trip has already started."
+		)
 
 
 def validate_delivery_note_locked(doc, method=None):
