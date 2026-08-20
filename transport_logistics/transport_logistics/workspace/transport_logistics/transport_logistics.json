@@ -107,7 +107,7 @@
   {
    "label": "Maintenance & Safety",
    "type": "Card Break",
-   "link_count": 7
+   "link_count": 8
   },
   {
    "label": "Truck Maintenance Log",
@@ -159,9 +159,16 @@
    "is_query_report": 0
   },
   {
+   "label": "Tyre Depth Inspection",
+   "type": "Link",
+   "link_type": "DocType",
+   "link_to": "Tyre Depth Inspection",
+   "is_query_report": 0
+  },
+  {
    "label": "Payments & Reports",
    "type": "Card Break",
-   "link_count": 12
+   "link_count": 13
   },
   {
    "label": "Driver Mileage Payment",
@@ -217,6 +224,13 @@
    "type": "Link",
    "link_type": "Report",
    "link_to": "Driver Safety Scorecard",
+   "is_query_report": 1
+  },
+  {
+   "label": "Driver Utilization",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Driver Utilization",
    "is_query_report": 1
   },
   {
