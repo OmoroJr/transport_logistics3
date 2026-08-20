@@ -28,6 +28,11 @@
   "column_break_qty",
   "total_amount",
   "fuel_efficiency_km_per_litre",
+  "section_break_extra_fuel",
+  "standard_fuel_litres",
+  "extra_fuel_litres",
+  "column_break_extra_fuel",
+  "extra_fuel_reason",
   "remarks",
   "journal_entry"
  ],
@@ -185,6 +190,36 @@
    "label": "Fuel Efficiency (Km/Litre)",
    "read_only": 1,
    "precision": "2"
+  },
+  {
+   "fieldname": "section_break_extra_fuel",
+   "fieldtype": "Section Break",
+   "label": "Extra Fuel (vs Route Standard)",
+   "depends_on": "eval:doc.reason_for_fuelling=='For Trip'"
+  },
+  {
+   "fieldname": "standard_fuel_litres",
+   "fieldtype": "Float",
+   "label": "Standard Fuel for Route (Litres)",
+   "read_only": 1,
+   "description": "Pulled from the trip's Route. Blank/zero means this route has no standard set, so no reason is required no matter how much fuel is logged."
+  },
+  {
+   "fieldname": "extra_fuel_litres",
+   "fieldtype": "Float",
+   "label": "Extra Fuel Over Standard (Litres)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_extra_fuel",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "extra_fuel_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for Extra Fuel",
+   "depends_on": "eval:doc.extra_fuel_litres > 0",
+   "description": "Required whenever the fuel logged for this trip exceeds the route's standard fuel amount."
   },
   {
    "fieldname": "remarks",

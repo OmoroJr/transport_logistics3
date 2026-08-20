@@ -3,12 +3,15 @@
 
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 
 class TruckFuelLog(Document):
 	def validate(self):
 		validate_reason_for_fuelling(self)
 		set_computed_fields(self)
+		set_extra_fuel_fields(self)
+		validate_extra_fuel_reason(self)
 
 
 def validate_reason_for_fuelling(doc):
@@ -89,6 +92,30 @@ def set_computed_fields(doc, method=None):
 		doc.fuel_efficiency_km_per_litre = doc.distance_covered / doc.fuel_qty_litres
 	else:
 		doc.fuel_efficiency_km_per_litre = 0
+
+
+def set_extra_fuel_fields(doc):
+	"""Pull the Standard Fuel (Litres) set on the trip's Route (if any) and work
+	out how much, if anything, this fill-up goes over that standard by."""
+	standard = 0
+	if doc.reason_for_fuelling == "For Trip" and doc.truck_trip:
+		route = frappe.db.get_value("Truck Trip", doc.truck_trip, "route")
+		if route:
+			standard = frappe.db.get_value("Route", route, "standard_fuel_litres") or 0
+
+	doc.standard_fuel_litres = standard
+	doc.extra_fuel_litres = max(0, (doc.fuel_qty_litres or 0) - standard) if standard else 0
+
+
+def validate_extra_fuel_reason(doc):
+	"""Fuel is capped at the route's standard by default, but a driver/clerk can
+	go over it as long as they record why \u2014 this is the leeway, not a hard block."""
+	if doc.extra_fuel_litres and doc.extra_fuel_litres > 0 and not doc.extra_fuel_reason:
+		frappe.throw(
+			f"This fill-up is {flt(doc.extra_fuel_litres, 1)} L over the "
+			f"{flt(doc.standard_fuel_litres, 1)} L standard for this route. "
+			"Please give a reason for the extra fuel."
+		)
 
 
 def notify_driver_fuel_confirmation(doc, method=None):
