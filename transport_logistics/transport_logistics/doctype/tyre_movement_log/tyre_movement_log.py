@@ -152,11 +152,13 @@ def apply_movement(doc, method=None):
 		tyre.status = "In Stock"
 		_clear_current_fitment(tyre)
 		tyre.retread_count = (tyre.retread_count or 0) + 1
+		tyre.flagged_for_replacement = 0
 
 	elif doc.movement_type == "Scrapped":
 		_accumulate_km(tyre, doc)
 		tyre.status = "Scrapped"
 		_clear_current_fitment(tyre, clear_position=False)
+		tyre.flagged_for_replacement = 0
 
 	tyre.save(ignore_permissions=True)
 

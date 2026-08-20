@@ -214,5 +214,30 @@ frappe.ui.form.on("Tyre", {
 			},
 			__("View")
 		);
+
+		if (frm.doc.status !== "Scrapped") {
+			frm.add_custom_button(
+				__("New Depth Inspection"),
+				() => {
+					frappe.new_doc("Tyre Depth Inspection", { tyre: frm.doc.name });
+				},
+				__("Create")
+			);
+		}
+
+		frm.add_custom_button(
+			__("Depth Inspection History"),
+			() => {
+				frappe.set_route("List", "Tyre Depth Inspection", { tyre: frm.doc.name });
+			},
+			__("View")
+		);
+
+		if (frm.doc.flagged_for_replacement) {
+			frm.dashboard.set_headline_alert(
+				__("This tyre is flagged for replacement following a failed depth inspection."),
+				"red"
+			);
+		}
 	},
 });

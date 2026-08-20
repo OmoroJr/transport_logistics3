@@ -1,0 +1,216 @@
+{
+ "actions": [],
+ "autoname": "format:TDI-{tyre}-{#####}",
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tyre",
+  "inspection_date",
+  "column_break_1",
+  "company",
+  "inspector",
+  "section_break_vehicle",
+  "current_vehicle_type",
+  "current_truck",
+  "current_trailer",
+  "current_position",
+  "column_break_vehicle",
+  "odometer_reading",
+  "section_break_depth",
+  "tread_depth_mm",
+  "minimum_required_mm",
+  "column_break_depth",
+  "status",
+  "section_break_notes",
+  "remarks",
+  "photo"
+ ],
+ "fields": [
+  {
+   "fieldname": "tyre",
+   "fieldtype": "Link",
+   "label": "Tyre",
+   "options": "Tyre",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "inspection_date",
+   "fieldtype": "Date",
+   "label": "Inspection Date",
+   "reqd": 1,
+   "default": "Today",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "inspector",
+   "fieldtype": "Link",
+   "label": "Inspected By",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_vehicle",
+   "fieldtype": "Section Break",
+   "label": "Vehicle & Position at Time of Inspection",
+   "description": "Fetched from the Tyre's current fitment when this record is created \u2014 kept as a snapshot even if the tyre is moved or removed later."
+  },
+  {
+   "fieldname": "current_vehicle_type",
+   "fieldtype": "Select",
+   "label": "Vehicle Type",
+   "options": "\nTruck\nTrailer",
+   "fetch_from": "tyre.current_vehicle_type",
+   "fetch_if_empty": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_truck",
+   "fieldtype": "Link",
+   "label": "Truck",
+   "options": "Truck",
+   "fetch_from": "tyre.current_truck",
+   "fetch_if_empty": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_trailer",
+   "fieldtype": "Link",
+   "label": "Trailer",
+   "options": "Trailer",
+   "fetch_from": "tyre.current_trailer",
+   "fetch_if_empty": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "current_position",
+   "fieldtype": "Data",
+   "label": "Position",
+   "fetch_from": "tyre.current_position",
+   "fetch_if_empty": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_vehicle",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "odometer_reading",
+   "fieldtype": "Float",
+   "label": "Odometer Reading (Km)",
+   "description": "Of the truck this tyre is currently fitted to, if applicable \u2014 useful for correlating wear rate against distance run."
+  },
+  {
+   "fieldname": "section_break_depth",
+   "fieldtype": "Section Break",
+   "label": "Tread Depth"
+  },
+  {
+   "fieldname": "tread_depth_mm",
+   "fieldtype": "Float",
+   "label": "Measured Tread Depth (mm)",
+   "reqd": 1,
+   "precision": "1",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "minimum_required_mm",
+   "fieldtype": "Float",
+   "label": "Minimum Required (mm)",
+   "precision": "1",
+   "description": "Defaults from Transport Logistics Settings > Minimum Legal Tread Depth, but can be overridden per-inspection (e.g. a stricter internal standard for steer axles)."
+  },
+  {
+   "fieldname": "column_break_depth",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pass\nMarginal\nFail",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Computed automatically: Fail if at/below the minimum, Marginal if within 20% above it, otherwise Pass."
+  },
+  {
+   "fieldname": "section_break_notes",
+   "fieldtype": "Section Break",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  },
+  {
+   "fieldname": "photo",
+   "fieldtype": "Attach",
+   "label": "Photo"
+  }
+ ],
+ "is_submittable": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Tyre Depth Inspection",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport Manager",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1,
+   "submit": 1,
+   "cancel": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1,
+   "email": 1,
+   "share": 1
+  },
+  {
+   "role": "Transport User",
+   "read": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

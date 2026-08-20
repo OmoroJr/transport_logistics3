@@ -15,6 +15,8 @@
   "other_expense_account",
   "accident_expense_account",
   "breakdown_expense_account",
+  "section_tyre_safety",
+  "minimum_tyre_tread_depth_mm",
   "section_alerts",
   "expiry_alert_days_before",
   "notify_role",
@@ -159,6 +161,19 @@
    "fieldtype": "Link",
    "label": "Highway Breakdown Expense Account",
    "options": "Account"
+  },
+  {
+   "fieldname": "section_tyre_safety",
+   "fieldtype": "Section Break",
+   "label": "Tyre Safety"
+  },
+  {
+   "fieldname": "minimum_tyre_tread_depth_mm",
+   "fieldtype": "Float",
+   "label": "Minimum Legal Tread Depth (mm)",
+   "default": "1.6",
+   "precision": "1",
+   "description": "Used by Tyre Depth Inspection to auto-flag a Fail. Kenyan traffic law sets 1.6mm as the general minimum, though your fleet may hold itself to a stricter internal standard (e.g. 3mm on steer axles) - adjust to whatever policy applies."
   },
   {
    "fieldname": "section_alerts",
@@ -406,7 +421,7 @@
    "fieldtype": "Data",
    "label": "WhatsApp Business Account ID",
    "depends_on": "eval:doc.enable_whatsapp",
-   "description": "Optional — only needed for managing Message Templates via the API. Not required for sending or receiving messages."
+   "description": "Optional \u2014 only needed for managing Message Templates via the API. Not required for sending or receiving messages."
   },
   {
    "fieldname": "column_break_whatsapp",
@@ -418,7 +433,7 @@
    "label": "Access Token",
    "depends_on": "eval:doc.enable_whatsapp",
    "mandatory_depends_on": "eval:doc.enable_whatsapp",
-   "description": "Use a permanent System User token from a Meta Business integration — the default 24-hour test token will stop working after a day."
+   "description": "Use a permanent System User token from a Meta Business integration \u2014 the default 24-hour test token will stop working after a day."
   },
   {
    "fieldname": "whatsapp_api_version",
@@ -464,12 +479,12 @@
    "fieldtype": "Check",
    "label": "Customer-Facing (Shipment status updates)",
    "default": "0",
-   "description": "Sent to the WhatsApp Number set on the Shipment. Off by default — turn on once you've confirmed customers are comfortable receiving WhatsApp updates."
+   "description": "Sent to the WhatsApp Number set on the Shipment. Off by default \u2014 turn on once you've confirmed customers are comfortable receiving WhatsApp updates."
   },
   {
    "fieldname": "section_whatsapp_webhook",
    "fieldtype": "Section Break",
-   "label": "Webhook (Optional — inbound messages & delivery status)",
+   "label": "Webhook (Optional \u2014 inbound messages & delivery status)",
    "depends_on": "eval:doc.enable_whatsapp",
    "collapsible": 1
   },
@@ -478,7 +493,7 @@
    "fieldtype": "Data",
    "label": "Webhook Verify Token",
    "depends_on": "eval:doc.enable_whatsapp",
-   "description": "Any string you choose — enter the same value in Meta's webhook subscription setup. Webhook URL: https://your-site/api/method/transport_logistics.transport_logistics.whatsapp.webhook"
+   "description": "Any string you choose \u2014 enter the same value in Meta's webhook subscription setup. Webhook URL: https://your-site/api/method/transport_logistics.transport_logistics.whatsapp.webhook"
   },
   {
    "fieldname": "section_whatsapp_test",

@@ -18,6 +18,7 @@
   "column_break_purchase",
   "expected_life_km",
   "retread_count",
+  "flagged_for_replacement",
   "section_break_current",
   "current_vehicle_type",
   "current_truck",
@@ -107,6 +108,14 @@
    "label": "Retread Count",
    "read_only": 1,
    "default": "0"
+  },
+  {
+   "fieldname": "flagged_for_replacement",
+   "fieldtype": "Check",
+   "label": "Flagged for Replacement",
+   "default": "0",
+   "read_only": 1,
+   "description": "Set automatically when a Tyre Depth Inspection records a Fail. Cleared automatically once the tyre is Retreaded or Scrapped (see Tyre Movement Log)."
   },
   {
    "fieldname": "section_break_current",

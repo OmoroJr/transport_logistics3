@@ -89,6 +89,9 @@ doc_events = {
         ],
         "on_cancel": "transport_logistics.transport_logistics.gl_utils.cancel_linked_journal_entry",
     },
+    "Tyre Depth Inspection": {
+        "on_submit": "transport_logistics.transport_logistics.doctype.tyre_depth_inspection.tyre_depth_inspection.flag_tyre_on_fail",
+    },
     "Driver Safety Incident": {
         "validate": "transport_logistics.transport_logistics.doctype.driver_safety_incident.driver_safety_incident.default_points_if_unset",
         "on_submit": "transport_logistics.transport_logistics.doctype.driver_safety_incident.driver_safety_incident.notify_high_severity",
