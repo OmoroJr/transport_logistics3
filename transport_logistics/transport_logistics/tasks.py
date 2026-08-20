@@ -118,6 +118,8 @@ def notify_users(subject, message, reference_doctype, reference_name, priority="
 		).insert(ignore_permissions=True)
 
 	_notify_users_whatsapp(subject, message, reference_doctype, reference_name, user_list)
+	_notify_users_email(subject, message, reference_doctype, reference_name, user_list)
+	_notify_users_sms(subject, message, reference_doctype, reference_name, user_list)
 
 
 def _notify_users_whatsapp(subject, message, reference_doctype, reference_name, user_list):
@@ -136,6 +138,56 @@ def _notify_users_whatsapp(subject, message, reference_doctype, reference_name, 
 		if not mobile_no:
 			continue
 		send_whatsapp_message(
+			mobile_no,
+			f"{subject}\n\n{message}",
+			reference_doctype=reference_doctype,
+			reference_name=reference_name,
+			settings=settings,
+		)
+
+
+def _notify_users_email(subject, message, reference_doctype, reference_name, user_list):
+	"""Best-effort email companion to the Notification Log/ToDo above, to
+	every user in user_list, using each User's own email address (a
+	User's `name` is its email address on virtually every Frappe site).
+	Deduplication against re-fired hooks is handled inside
+	send_email_alert() itself (same reference_doctype/name/subject)."""
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_email_alerts and settings.email_notify_internal_alerts):
+		return
+
+	from transport_logistics.transport_logistics.email_alerts import send_email_alert
+
+	recipients = [u for u in user_list if u and "@" in u]
+	if not recipients:
+		return
+
+	send_email_alert(
+		recipients,
+		subject,
+		message,
+		reference_doctype=reference_doctype,
+		reference_name=reference_name,
+		settings=settings,
+	)
+
+
+def _notify_users_sms(subject, message, reference_doctype, reference_name, user_list):
+	"""Best-effort SMS companion to the Notification Log/ToDo above, to
+	every user in user_list who has a Mobile No on their User record.
+	Deduplication against re-fired hooks is handled inside send_sms()
+	itself (same reference_doctype/name/message)."""
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_sms and settings.sms_notify_internal_alerts):
+		return
+
+	from transport_logistics.transport_logistics.sms import send_sms
+
+	for user in user_list:
+		mobile_no = frappe.db.get_value("User", user, "mobile_no")
+		if not mobile_no:
+			continue
+		send_sms(
 			mobile_no,
 			f"{subject}\n\n{message}",
 			reference_doctype=reference_doctype,

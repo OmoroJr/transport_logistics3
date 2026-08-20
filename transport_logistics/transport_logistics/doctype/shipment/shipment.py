@@ -16,6 +16,7 @@ class Shipment(Document):
 	def validate(self):
 		compute_charge_totals(self)
 		auto_fill_client_whatsapp_number(self)
+		auto_fill_client_email(self)
 		notify_client_on_status_change(self)
 
 
@@ -53,6 +54,26 @@ def auto_fill_client_whatsapp_number(doc, method=None):
 		doc.client_whatsapp_number = mobile
 
 
+def auto_fill_client_email(doc, method=None):
+	"""Same idea as auto_fill_client_whatsapp_number() above, but fills
+	Client Email from the client's primary Contact email, if on file and
+	the field is still blank."""
+	if doc.client_email or not doc.client:
+		return
+
+	primary_contact = frappe.db.get_value(
+		"Dynamic Link",
+		{"link_doctype": "Customer", "link_name": doc.client, "parenttype": "Contact"},
+		"parent",
+	)
+	if not primary_contact:
+		return
+
+	email = frappe.db.get_value("Contact", primary_contact, "email_id")
+	if email:
+		doc.client_email = email
+
+
 def notify_client_on_status_change(doc, method=None):
 	"""Sends a WhatsApp update to the client when Status moves to one of the
 	milestones in CUSTOMER_NOTIFY_STATUSES. Runs in validate() (before this
@@ -68,14 +89,7 @@ def notify_client_on_status_change(doc, method=None):
 		if previous_status == doc.status:
 			return
 
-	if not doc.client_whatsapp_number:
-		return
-
 	settings = frappe.get_cached_doc("Transport Logistics Settings")
-	if not (settings.enable_whatsapp and settings.whatsapp_notify_customer):
-		return
-
-	from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
 
 	status_messages = {
 		"Customs Released": f"Good news — your shipment {doc.name} has cleared customs and is being prepared for onward transport.",
@@ -85,13 +99,39 @@ def notify_client_on_status_change(doc, method=None):
 	}
 	message = status_messages.get(doc.status, f"Update on your shipment {doc.name}: status is now {doc.status}.")
 
-	send_whatsapp_message(
-		doc.client_whatsapp_number,
-		message,
-		reference_doctype="Shipment",
-		reference_name=doc.name,
-		settings=settings,
-	)
+	if doc.client_whatsapp_number and settings.enable_whatsapp and settings.whatsapp_notify_customer:
+		from transport_logistics.transport_logistics.whatsapp import send_whatsapp_message
+
+		send_whatsapp_message(
+			doc.client_whatsapp_number,
+			message,
+			reference_doctype="Shipment",
+			reference_name=doc.name,
+			settings=settings,
+		)
+
+	if doc.client_email and settings.enable_email_alerts and settings.email_notify_customer:
+		from transport_logistics.transport_logistics.email_alerts import send_email_alert
+
+		send_email_alert(
+			doc.client_email,
+			f"Shipment {doc.name} update: {doc.status}",
+			message,
+			reference_doctype="Shipment",
+			reference_name=doc.name,
+			settings=settings,
+		)
+
+	if doc.client_whatsapp_number and settings.enable_sms and settings.sms_notify_customer:
+		from transport_logistics.transport_logistics.sms import send_sms
+
+		send_sms(
+			doc.client_whatsapp_number,
+			message,
+			reference_doctype="Shipment",
+			reference_name=doc.name,
+			settings=settings,
+		)
 
 
 @frappe.whitelist()

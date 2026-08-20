@@ -67,7 +67,32 @@
   "section_whatsapp_webhook",
   "whatsapp_webhook_verify_token",
   "section_whatsapp_test",
-  "whatsapp_test_number"
+  "whatsapp_test_number",
+  "section_email",
+  "enable_email_alerts",
+  "column_break_email",
+  "section_email_channels",
+  "email_notify_internal_alerts",
+  "email_notify_driver",
+  "column_break_email_channels",
+  "email_notify_customer",
+  "section_email_test",
+  "email_test_recipient",
+  "section_sms",
+  "enable_sms",
+  "sms_provider",
+  "sms_environment",
+  "column_break_sms",
+  "sms_username",
+  "sms_api_key",
+  "sms_sender_id",
+  "section_sms_channels",
+  "sms_notify_internal_alerts",
+  "sms_notify_driver",
+  "column_break_sms_channels",
+  "sms_notify_customer",
+  "section_sms_test",
+  "sms_test_number"
  ],
  "fields": [
   {
@@ -468,6 +493,169 @@
    "label": "Test Number",
    "depends_on": "eval:doc.enable_whatsapp",
    "description": "Enter a WhatsApp number (with or without country code) and use the 'Send Test Message' button in the toolbar."
+  },
+  {
+   "fieldname": "section_email",
+   "fieldtype": "Section Break",
+   "label": "Email Alerts"
+  },
+  {
+   "fieldname": "enable_email_alerts",
+   "fieldtype": "Check",
+   "label": "Enable Email Alerts",
+   "default": "0",
+   "description": "Sends alerts as email using this site's own outgoing Email Account (Settings > Email Account) via frappe.sendmail() \u2014 no separate SMTP credentials needed here. All sending is best-effort: a failed email is logged to Error Log and never blocks the document that triggered it."
+  },
+  {
+   "fieldname": "column_break_email",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_email_channels",
+   "fieldtype": "Section Break",
+   "label": "Notification Channels",
+   "depends_on": "eval:doc.enable_email_alerts"
+  },
+  {
+   "fieldname": "email_notify_internal_alerts",
+   "fieldtype": "Check",
+   "label": "Internal Alerts (breakdowns, accidents, expiry, compliance)",
+   "default": "1",
+   "description": "Sent alongside the existing in-app Notification/ToDo, to every enabled user holding the Notify Role, using each User's email address."
+  },
+  {
+   "fieldname": "email_notify_driver",
+   "fieldtype": "Check",
+   "label": "Driver-Facing (trip dispatch, Authority to Load result, fuel confirmation)",
+   "default": "0",
+   "description": "Sent to the driver's Employee Company Email (falling back to Personal Email if Company Email is blank)."
+  },
+  {
+   "fieldname": "column_break_email_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email_notify_customer",
+   "fieldtype": "Check",
+   "label": "Customer-Facing (Shipment status updates)",
+   "default": "0",
+   "description": "Sent to the Client Email set on the Shipment. Off by default \u2014 turn on once you've confirmed customers are comfortable receiving email updates."
+  },
+  {
+   "fieldname": "section_email_test",
+   "fieldtype": "Section Break",
+   "label": "Test Connection",
+   "depends_on": "eval:doc.enable_email_alerts",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "email_test_recipient",
+   "fieldtype": "Data",
+   "label": "Test Recipient",
+   "options": "Email",
+   "depends_on": "eval:doc.enable_email_alerts",
+   "description": "Enter an email address and use the 'Send Test Email' button in the toolbar."
+  },
+  {
+   "fieldname": "section_sms",
+   "fieldtype": "Section Break",
+   "label": "SMS Alerts (Africa's Talking)"
+  },
+  {
+   "fieldname": "enable_sms",
+   "fieldtype": "Check",
+   "label": "Enable SMS Alerts",
+   "default": "0",
+   "description": "Requires an Africa's Talking account (africastalking.com) with an SMS application. All sending is best-effort: a failed SMS is logged to SMS Message Log and never blocks the document that triggered it."
+  },
+  {
+   "fieldname": "sms_provider",
+   "fieldtype": "Select",
+   "label": "Provider",
+   "options": "Africa's Talking",
+   "default": "Africa's Talking",
+   "depends_on": "eval:doc.enable_sms",
+   "description": "Only Africa's Talking is wired up today. Listed as a Select (rather than hardcoded) so another gateway can be added to sms.py later without a Settings schema change."
+  },
+  {
+   "fieldname": "sms_environment",
+   "fieldtype": "Select",
+   "label": "Environment",
+   "options": "Sandbox\nProduction",
+   "default": "Sandbox",
+   "depends_on": "eval:doc.enable_sms"
+  },
+  {
+   "fieldname": "column_break_sms",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sms_username",
+   "fieldtype": "Data",
+   "label": "Username",
+   "depends_on": "eval:doc.enable_sms",
+   "mandatory_depends_on": "eval:doc.enable_sms",
+   "description": "Use 'sandbox' for the free Africa's Talking sandbox environment, or your live app's username in Production."
+  },
+  {
+   "fieldname": "sms_api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "depends_on": "eval:doc.enable_sms",
+   "mandatory_depends_on": "eval:doc.enable_sms",
+   "description": "From Africa's Talking dashboard: Account > API Key."
+  },
+  {
+   "fieldname": "sms_sender_id",
+   "fieldtype": "Data",
+   "label": "Sender ID / Shortcode",
+   "depends_on": "eval:doc.enable_sms",
+   "description": "Optional. Leave blank to send from Africa's Talking's shared/default sender in Sandbox. A registered Sender ID or shortcode is required for Production in most cases."
+  },
+  {
+   "fieldname": "section_sms_channels",
+   "fieldtype": "Section Break",
+   "label": "Notification Channels",
+   "depends_on": "eval:doc.enable_sms"
+  },
+  {
+   "fieldname": "sms_notify_internal_alerts",
+   "fieldtype": "Check",
+   "label": "Internal Alerts (breakdowns, accidents, expiry, compliance)",
+   "default": "1",
+   "description": "Sent alongside the existing in-app Notification/ToDo, to every enabled user holding the Notify Role, using each User's Mobile No."
+  },
+  {
+   "fieldname": "sms_notify_driver",
+   "fieldtype": "Check",
+   "label": "Driver-Facing (trip dispatch, Authority to Load result, fuel confirmation)",
+   "default": "0",
+   "description": "Sent to the driver's Employee Cell Number."
+  },
+  {
+   "fieldname": "column_break_sms_channels",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sms_notify_customer",
+   "fieldtype": "Check",
+   "label": "Customer-Facing (Shipment status updates)",
+   "default": "0",
+   "description": "Sent to the Client WhatsApp Number set on the Shipment (reused here as a plain phone number for SMS). Off by default."
+  },
+  {
+   "fieldname": "section_sms_test",
+   "fieldtype": "Section Break",
+   "label": "Test Connection",
+   "depends_on": "eval:doc.enable_sms",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "sms_test_number",
+   "fieldtype": "Data",
+   "label": "Test Number",
+   "depends_on": "eval:doc.enable_sms",
+   "description": "Enter a phone number (with or without country code) and use the 'Send Test SMS' button in the toolbar."
   }
  ],
  "index_web_pages_for_search": 1,

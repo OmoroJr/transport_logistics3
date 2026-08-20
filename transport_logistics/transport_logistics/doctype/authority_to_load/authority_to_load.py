@@ -138,3 +138,63 @@ def notify_driver(doc, method=None):
 	send_whatsapp_message(
 		cell_number, message, reference_doctype="Authority to Load", reference_name=doc.name, settings=settings
 	)
+
+
+def notify_driver_email(doc, method=None):
+	"""Email companion to notify_driver() above, using the driver's
+	Employee Company Email (falling back to Personal Email)."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_email_alerts and settings.email_notify_driver):
+		return
+
+	email = frappe.db.get_value("Employee", doc.driver, "company_email") or frappe.db.get_value(
+		"Employee", doc.driver, "personal_email"
+	)
+	if not email:
+		return
+
+	from transport_logistics.transport_logistics.email_alerts import send_email_alert
+
+	message = (
+		f"Authority to Load {doc.name} approved for Truck {doc.truck}"
+		f"{' — Trip ' + doc.truck_trip if doc.truck_trip else ''}. "
+		f"{'Destination: ' + doc.destination + '. ' if doc.destination else ''}"
+		"You are cleared to load."
+	)
+	send_email_alert(
+		email,
+		f"Authority to Load {doc.name} approved",
+		message,
+		reference_doctype="Authority to Load",
+		reference_name=doc.name,
+		settings=settings,
+	)
+
+
+def notify_driver_sms(doc, method=None):
+	"""SMS companion to notify_driver() above."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_sms and settings.sms_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.sms import send_sms
+
+	message = (
+		f"Authority to Load {doc.name} approved for Truck {doc.truck}"
+		f"{' — Trip ' + doc.truck_trip if doc.truck_trip else ''}. "
+		f"{'Destination: ' + doc.destination + '. ' if doc.destination else ''}"
+		"You are cleared to load."
+	)
+	send_sms(
+		cell_number, message, reference_doctype="Authority to Load", reference_name=doc.name, settings=settings
+	)

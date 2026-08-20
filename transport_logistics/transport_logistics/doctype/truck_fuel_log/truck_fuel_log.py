@@ -119,6 +119,64 @@ def notify_driver_fuel_confirmation(doc, method=None):
 	)
 
 
+def notify_driver_fuel_confirmation_email(doc, method=None):
+	"""Email companion to notify_driver_fuel_confirmation() above, using the
+	driver's Employee Company Email (falling back to Personal Email)."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_email_alerts and settings.email_notify_driver):
+		return
+
+	email = frappe.db.get_value("Employee", doc.driver, "company_email") or frappe.db.get_value(
+		"Employee", doc.driver, "personal_email"
+	)
+	if not email:
+		return
+
+	from transport_logistics.transport_logistics.email_alerts import send_email_alert
+
+	message = (
+		f"Fuel log {doc.name} confirmed — {doc.fuel_qty_litres} litres for Truck {doc.truck}"
+		f"{' (' + doc.reason_for_fuelling + ')' if doc.reason_for_fuelling else ''}. "
+		f"Total: {doc.total_amount}."
+	)
+	send_email_alert(
+		email,
+		f"Fuel Log {doc.name} confirmed",
+		message,
+		reference_doctype="Truck Fuel Log",
+		reference_name=doc.name,
+		settings=settings,
+	)
+
+
+def notify_driver_fuel_confirmation_sms(doc, method=None):
+	"""SMS companion to notify_driver_fuel_confirmation() above."""
+	if not doc.driver:
+		return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_sms and settings.sms_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.sms import send_sms
+
+	message = (
+		f"Fuel log {doc.name} confirmed — {doc.fuel_qty_litres} litres for Truck {doc.truck}"
+		f"{' (' + doc.reason_for_fuelling + ')' if doc.reason_for_fuelling else ''}. "
+		f"Total: {doc.total_amount}."
+	)
+	send_sms(
+		cell_number, message, reference_doctype="Truck Fuel Log", reference_name=doc.name, settings=settings
+	)
+
+
 def update_truck_odometer(doc, method=None):
 	"""Keep Truck.current_odometer in sync with the latest submitted fuel log."""
 	truck = frappe.get_doc("Truck", doc.truck)

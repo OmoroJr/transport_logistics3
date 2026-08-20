@@ -26,6 +26,8 @@ class TruckTrip(Document):
 		validate_offload_data(self)
 		set_revenue_from_sales_order(self)
 		notify_driver_trip_started(self)
+		notify_driver_trip_started_email(self)
+		notify_driver_trip_started_sms(self)
 
 
 def compute_distance(doc, method=None):
@@ -349,6 +351,74 @@ def notify_driver_trip_started(doc, method=None):
 		+ (f" Delivery Note: {doc.delivery_note}." if doc.delivery_note else "")
 	)
 	send_whatsapp_message(
+		cell_number, message, reference_doctype="Truck Trip", reference_name=doc.name, settings=settings
+	)
+
+
+def notify_driver_trip_started_email(doc, method=None):
+	"""Email companion to notify_driver_trip_started() above, using the
+	driver's Employee Company Email (falling back to Personal Email)."""
+	if doc.status != "Ongoing" or not doc.driver:
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_email_alerts and settings.email_notify_driver):
+		return
+
+	email = frappe.db.get_value("Employee", doc.driver, "company_email") or frappe.db.get_value(
+		"Employee", doc.driver, "personal_email"
+	)
+	if not email:
+		return
+
+	from transport_logistics.transport_logistics.email_alerts import send_email_alert
+
+	message = (
+		f"Trip {doc.name} dispatched — Truck {doc.truck}, "
+		f"{doc.origin or 'origin not set'} to {doc.destination or 'destination not set'}."
+		+ (f" Delivery Note: {doc.delivery_note}." if doc.delivery_note else "")
+	)
+	send_email_alert(
+		email,
+		f"Trip {doc.name} dispatched",
+		message,
+		reference_doctype="Truck Trip",
+		reference_name=doc.name,
+		settings=settings,
+	)
+
+
+def notify_driver_trip_started_sms(doc, method=None):
+	"""SMS companion to notify_driver_trip_started() above."""
+	if doc.status != "Ongoing" or not doc.driver:
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not (settings.enable_sms and settings.sms_notify_driver):
+		return
+
+	cell_number = frappe.db.get_value("Employee", doc.driver, "cell_number")
+	if not cell_number:
+		return
+
+	from transport_logistics.transport_logistics.sms import send_sms
+
+	message = (
+		f"Trip {doc.name} dispatched — Truck {doc.truck}, "
+		f"{doc.origin or 'origin not set'} to {doc.destination or 'destination not set'}."
+		+ (f" Delivery Note: {doc.delivery_note}." if doc.delivery_note else "")
+	)
+	send_sms(
 		cell_number, message, reference_doctype="Truck Trip", reference_name=doc.name, settings=settings
 	)
 

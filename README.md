@@ -651,16 +651,71 @@ business number first; `send_whatsapp_template()` in `whatsapp.py` is there
 for sending pre-approved Message Templates to reach anyone regardless of
 window.
 
+## New: Email and SMS alerts
+
+Email (`transport_logistics/email_alerts.py`) and SMS
+(`transport_logistics/sms.py`) are optional companions to the WhatsApp
+integration above, following the exact same three-channel shape — set up
+under **Transport Logistics Settings → Email Alerts** and **→ SMS Alerts
+(Africa's Talking)**:
+
+| Channel | Sent to | Sent when |
+|---|---|---|
+| **Internal alerts** | Email: every enabled user's own email address. SMS: every enabled user's User → Mobile No. Both: users holding the Notify Role | Same trigger points as WhatsApp — Highway Breakdown, Major/Fatal Accident Report, High-severity Driver Safety Incident, and the daily compliance/document expiry check |
+| **Driver-facing** | Email: the driver's Employee → Company Email (falling back to Personal Email). SMS: Employee → Cell Number | Authority to Load submitted, Truck Trip dispatched (Planned → Ongoing), Truck Fuel Log submitted |
+| **Customer-facing** | Email: Shipment → Client Email (auto-filled from the client's primary Contact if on file). SMS: Shipment → Client WhatsApp Number (reused as a plain phone number for SMS) | Shipment status reaches Customs Released, In Transit, Delivered, or Completed |
+
+### Email setup
+
+No separate SMTP credentials are needed — email alerts are sent through
+this site's own outgoing **Email Account** (Settings → Email Account),
+using `frappe.sendmail()`. Just:
+
+1. Confirm a default outgoing Email Account is configured on the site (most
+   sites already have one).
+2. On **Transport Logistics Settings**, turn on **Enable Email Alerts**
+   and tick whichever of the three **Notification Channels** you want live.
+3. Save, then use **Send Test Email** (toolbar button, once a **Test
+   Recipient** is filled in) to confirm it's working.
+
+Every send is recorded as a Communication against the reference document
+(visible in that document's Activity tab) — there's no separate log doctype
+for email, since Frappe already tracks this.
+
+### SMS setup (Africa's Talking)
+
+1. Create an account at [africastalking.com](https://africastalking.com).
+   Use the free Sandbox app to test before going live.
+2. On **Transport Logistics Settings**, turn on **Enable SMS Alerts** and
+   fill in:
+   - **Environment** — Sandbox for testing, Production once you have a
+     live/approved app
+   - **Username** — `sandbox` for the sandbox environment, or your live
+     app's username in Production
+   - **API Key** (Account → API Key in the dashboard)
+   - **Sender ID / Shortcode** — optional; a registered Sender ID or
+     shortcode is required for Production in most cases
+3. Tick whichever of the three **Notification Channels** you want live.
+4. Save, then use **Send Test SMS** (toolbar button, once a **Test
+   Number** is filled in) to confirm it's working.
+
+Every send is logged to **SMS Message Log** (Sent/Failed, with the error
+message on failure) — sending is always best-effort and never blocks the
+document that triggered it. Only Africa's Talking is wired up today;
+`sms.py` is structured so another gateway can be added later without
+touching the Settings schema (`sms_provider` is already a Select).
+
 ## Suggested next steps (not built yet)
 
 - Route GL postings through Purchase Invoice + Supplier instead of plain
   Journal Entries, if you want payables tracked per vendor/fuel station.
 - A Truck Trip → Delivery Note/Sales Invoice link if you invoice haulage
   customers directly from ERPNext.
-- Email (not just in-app notification) for expiry alerts — straightforward
-  to add via `frappe.sendmail()` in `tasks.py` if you want it.
 - Inbound WhatsApp conversation handling (e.g. a driver replying "CONFIRM")
   — the webhook already logs incoming messages to WhatsApp Message Log;
   acting on them is the natural next layer.
+- Inbound SMS handling (Africa's Talking delivery reports / two-way SMS)
+  — `sms.py` only sends today; a webhook endpoint mirroring
+  `whatsapp.webhook()` would be the natural next layer if you need it.
 
 Happy to build any of the above — just say which one.

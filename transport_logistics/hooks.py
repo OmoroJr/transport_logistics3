@@ -30,6 +30,8 @@ doc_events = {
             "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.update_truck_odometer",
             "transport_logistics.transport_logistics.gl_utils.post_fuel_log_to_gl",
             "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.notify_driver_fuel_confirmation",
+            "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.notify_driver_fuel_confirmation_email",
+            "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.notify_driver_fuel_confirmation_sms",
         ],
         "on_cancel": [
             "transport_logistics.transport_logistics.doctype.truck_fuel_log.truck_fuel_log.update_truck_odometer",
@@ -61,7 +63,11 @@ doc_events = {
     },
     "Authority to Load": {
         "validate": "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.run_compliance_checks",
-        "on_submit": "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.notify_driver",
+        "on_submit": [
+            "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.notify_driver",
+            "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.notify_driver_email",
+            "transport_logistics.transport_logistics.doctype.authority_to_load.authority_to_load.notify_driver_sms",
+        ],
     },
     "Accident Report": {
         "validate": "transport_logistics.transport_logistics.doctype.accident_report.accident_report.set_cost_fields",
