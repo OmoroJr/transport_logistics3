@@ -168,7 +168,7 @@
   {
    "label": "Payments & Reports",
    "type": "Card Break",
-   "link_count": 13
+   "link_count": 14
   },
   {
    "label": "Driver Mileage Payment",
@@ -189,6 +189,13 @@
    "type": "Link",
    "link_type": "Report",
    "link_to": "Truck Cost Analysis",
+   "is_query_report": 1
+  },
+  {
+   "label": "Fuel Report",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Fuel Report",
    "is_query_report": 1
   },
   {
