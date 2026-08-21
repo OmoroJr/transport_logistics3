@@ -1,6 +1,13 @@
 // Copyright (c) 2026, Wycliffs and contributors
 // For license information, please see license.txt
 
+// Wrapped in an IIFE so top-level `const`/`function` names here can never
+// collide with another copy of this same script if the asset bundler ever
+// includes it twice in one bundle (that previously caused a fatal
+// "Identifier has already been declared" SyntaxError that silently broke
+// the entire bundle, including unrelated doctypes' form scripts).
+(function () {
+
 const SIDE_OPTIONS = "\nLeft\nRight\nLeft Outer\nLeft Inner\nRight Outer\nRight Inner";
 
 function update_axle_description(dialog) {
@@ -241,3 +248,5 @@ frappe.ui.form.on("Tyre", {
 		}
 	},
 });
+
+})();
