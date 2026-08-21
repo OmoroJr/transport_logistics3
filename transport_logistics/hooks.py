@@ -26,7 +26,7 @@ doctype_list_js = {
 # pending Manager Approval requests with inline Approve/Reject buttons.
 # See transport_logistics/public/js/approval_notifications.js and
 # manager_approval.py.
-app_include_js = ["public/js/approval_notifications.js"]
+app_include_js = ["/assets/transport_logistics/js/approval_notifications.js"]
 
 # Document Events
 doc_events = {
@@ -140,6 +140,9 @@ doc_events = {
     },
     "Shipment": {
         "validate": "transport_logistics.transport_logistics.doctype.shipment.shipment.compute_charge_totals",
+    },
+    "Trip Pre Inspection": {
+        "on_submit": "transport_logistics.transport_logistics.doctype.trip_pre_inspection.trip_pre_inspection.notify_on_fail",
     },
 }
 

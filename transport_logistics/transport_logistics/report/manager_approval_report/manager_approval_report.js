@@ -101,7 +101,7 @@ function handle_decision(report, action, doctype, name) {
 	}
 
 	frappe.prompt(
-		[{ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks") }],
+		[{ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks"), reqd: 1 }],
 		(values) => call_decision(report, "reject_request", doctype, name, values.remarks),
 		__("Reject Request"),
 		__("Reject")

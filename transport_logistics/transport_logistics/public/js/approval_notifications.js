@@ -127,7 +127,7 @@ transport_logistics.approvals = {
 			const doctype = $row.data("doctype");
 			const name = $row.data("name");
 			frappe.prompt(
-				[{ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks") }],
+				[{ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks"), reqd: 1 }],
 				(values) => me.decide($row, "reject_request", doctype, name, values.remarks),
 				__("Reject Request"),
 				__("Reject")
@@ -141,7 +141,8 @@ transport_logistics.approvals = {
 			method: `transport_logistics.transport_logistics.manager_approval.${method_name}`,
 			args: { doctype, name, remarks },
 			freeze: true,
-			callback: function () {
+			callback: function (r) {
+				if (r.exc) return; // frappe already showed the error dialog
 				frappe.show_alert({
 					message: method_name === "approve_request" ? __("Approved") : __("Rejected"),
 					indicator: method_name === "approve_request" ? "green" : "orange",
@@ -151,10 +152,13 @@ transport_logistics.approvals = {
 				$row.fadeOut(150, () => {
 					$row.remove();
 					me.requests = me.requests.filter(
-						(r) => !(r.reference_doctype === doctype && r.reference_name === name)
+						(r2) => !(r2.reference_doctype === doctype && r2.reference_name === name)
 					);
 					me.render_list();
 				});
+			},
+			error: function (r) {
+				console.error("transport_logistics approvals: " + method_name + " failed", r);
 			},
 		});
 	},

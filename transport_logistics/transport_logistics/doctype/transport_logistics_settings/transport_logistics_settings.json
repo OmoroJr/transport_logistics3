@@ -17,6 +17,8 @@
   "breakdown_expense_account",
   "section_tyre_safety",
   "minimum_tyre_tread_depth_mm",
+  "section_pretrip_inspection",
+  "require_pretrip_inspection",
   "section_alerts",
   "expiry_alert_days_before",
   "notify_role",
@@ -174,6 +176,18 @@
    "default": "1.6",
    "precision": "1",
    "description": "Used by Tyre Depth Inspection to auto-flag a Fail. Kenyan traffic law sets 1.6mm as the general minimum, though your fleet may hold itself to a stricter internal standard (e.g. 3mm on steer axles) - adjust to whatever policy applies."
+  },
+  {
+   "fieldname": "section_pretrip_inspection",
+   "fieldtype": "Section Break",
+   "label": "Pre-Trip Inspection"
+  },
+  {
+   "fieldname": "require_pretrip_inspection",
+   "fieldtype": "Check",
+   "label": "Require Pre-Trip Inspection Before Departure",
+   "default": "0",
+   "description": "When enabled, a Truck Trip cannot move to Ongoing without a submitted, Pass'd Trip Pre Inspection on file for that truck (dated on or before departure). Off by default -- Trip Pre Inspection can be used and recorded either way; this only controls whether it's enforced as a hard gate before departure."
   },
   {
    "fieldname": "section_alerts",

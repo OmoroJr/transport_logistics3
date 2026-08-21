@@ -24,6 +24,8 @@ class TruckTrip(Document):
 		validate_delivery_note_locked(self)
 		validate_pretrip_fuel_log_locked(self)
 		validate_pretrip_fuel(self)
+		validate_pretrip_inspection_locked(self)
+		validate_pretrip_inspection(self)
 		validate_offload_data(self)
 		set_revenue_from_sales_order(self)
 		notify_driver_trip_started(self)
@@ -270,6 +272,88 @@ def validate_pretrip_fuel_log_locked(doc, method=None):
 			f"Truck Fuel Log {doc.pre_trip_fuel_log} is dated {log.date}, which is after this "
 			f"trip's date ({doc.trip_date}). The Pre-Trip Fuel Log must be dated on or before "
 			"departure — it can't happen after the trip has already started."
+		)
+
+
+def validate_pretrip_inspection(doc, method=None):
+	"""A truck can't start a trip (status Ongoing) without a Pass'd Trip Pre
+	Inspection on file — the pre-departure vehicle safety checklist (tyres,
+	brakes, lights, fluids, safety equipment, load securing, etc; see
+	trip_pre_inspection.py). Same gating pattern as validate_pretrip_fuel()
+	above, and for the same reason: a truck sent out without this check is
+	exactly the kind of thing that turns into a Highway Breakdown or an
+	Accident Report later.
+
+	Off by default (Transport Logistics Settings > Require Pre-Trip
+	Inspection Before Departure) — Trip Pre Inspection can still be created
+	and used either way; this only controls whether it's enforced as a hard
+	gate before a trip can depart."""
+	settings = frappe.get_cached_doc("Transport Logistics Settings")
+	if not settings.require_pretrip_inspection:
+		return
+
+	if doc.status != "Ongoing":
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	if not doc.pre_trip_inspection:
+		frappe.throw(
+			"Truck Trip cannot start (status Ongoing) without a Pre-Trip Inspection — "
+			"link a Trip Pre Inspection for this truck, dated on or before departure, "
+			"with Overall Status Pass."
+		)
+
+
+def validate_pretrip_inspection_locked(doc, method=None):
+	if doc.is_new():
+		return
+
+	previous = frappe.db.get_value("Truck Trip", doc.name, "pre_trip_inspection")
+	if previous and doc.pre_trip_inspection != previous:
+		frappe.throw(
+			f"Pre-Trip Inspection cannot be changed once set (was {previous}). It represents "
+			"proof the vehicle safety checklist was actually completed before this specific "
+			"trip departed."
+		)
+
+	if not doc.pre_trip_inspection:
+		return
+
+	inspection = frappe.db.get_value(
+		"Trip Pre Inspection",
+		doc.pre_trip_inspection,
+		["docstatus", "truck", "overall_status", "inspection_date"],
+		as_dict=True,
+	)
+	if not inspection:
+		frappe.throw(f"Trip Pre Inspection {doc.pre_trip_inspection} not found.")
+	if inspection.docstatus != 1:
+		frappe.throw(
+			f"Trip Pre Inspection {doc.pre_trip_inspection} must be submitted before it can be "
+			"linked as this trip's Pre-Trip Inspection."
+		)
+	if inspection.truck != doc.truck:
+		frappe.throw(
+			f"Trip Pre Inspection {doc.pre_trip_inspection} is for truck {inspection.truck}, "
+			f"which doesn't match this trip's truck ({doc.truck})."
+		)
+	if inspection.overall_status != "Pass":
+		frappe.throw(
+			f"Trip Pre Inspection {doc.pre_trip_inspection} has Overall Status "
+			f"{inspection.overall_status or 'not set'}, not Pass. This truck cannot depart "
+			"until a passing inspection is on file."
+		)
+	if doc.trip_date and inspection.inspection_date and getdate(inspection.inspection_date) > getdate(
+		doc.trip_date
+	):
+		frappe.throw(
+			f"Trip Pre Inspection {doc.pre_trip_inspection} is dated {inspection.inspection_date}, "
+			f"which is after this trip's date ({doc.trip_date}). The Pre-Trip Inspection must be "
+			"dated on or before departure — it can't happen after the trip has already started."
 		)
 
 

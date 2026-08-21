@@ -16,6 +16,7 @@
   "sales_order",
   "delivery_note",
   "pre_trip_fuel_log",
+  "pre_trip_inspection",
   "section_break_route",
   "origin",
   "destination",
@@ -128,6 +129,13 @@
    "options": "Truck Fuel Log",
    "description": "A Full Tank fuel log for this truck, dated on or before departure \u2014 required before the trip can start (status Ongoing). Confirms the truck was fueled up before leaving, reducing the risk of a highway breakdown from running dry. Locked once set.",
    "mandatory_depends_on": "eval:doc.status==\"Ongoing\" || doc.status==\"Completed\""
+  },
+  {
+   "fieldname": "pre_trip_inspection",
+   "fieldtype": "Link",
+   "label": "Pre-Trip Inspection",
+   "options": "Trip Pre Inspection",
+   "description": "A Pass'd Trip Pre Inspection for this truck, dated on or before departure. Optional by default; becomes required before the trip can start (status Ongoing) if Transport Logistics Settings > Require Pre-Trip Inspection Before Departure is enabled. Locked once set."
   },
   {
    "fieldname": "section_break_route",

@@ -180,11 +180,14 @@ def reject_request(doctype, name, remarks=None):
 	if doc.get("manager_approval_status") != "Pending Approval":
 		frappe.throw(_("Only a request that is Pending Approval can be rejected."))
 
+	if not remarks or not remarks.strip():
+		frappe.throw(_("A reason is required when rejecting a request — please explain why."))
+
 	doc.manager_approval_status = "Rejected"
 	doc.approved_by = frappe.session.user
 	doc.approved_on = now_datetime()
-	if remarks and doc.meta.has_field("approval_remarks"):
-		doc.approval_remarks = remarks
+	if doc.meta.has_field("approval_remarks"):
+		doc.approval_remarks = remarks.strip()
 	doc.save(ignore_permissions=True)
 	_notify_approval_change()
 	return doc.name
