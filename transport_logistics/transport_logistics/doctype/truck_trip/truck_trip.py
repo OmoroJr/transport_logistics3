@@ -17,6 +17,7 @@ from frappe.utils import now_datetime, flt, getdate
 class TruckTrip(Document):
 	def validate(self):
 		compute_distance(self)
+		enforce_driver_change_approval(self)
 		validate_truck_availability(self)
 		validate_loading_authority(self)
 		auto_create_delivery_note(self)
@@ -37,6 +38,59 @@ def compute_distance(doc, method=None):
 		doc.distance_km = doc.end_odometer - doc.start_odometer
 	else:
 		doc.distance_km = 0
+
+
+def enforce_driver_change_approval(doc, method=None):
+	"""Once a trip already has a Driver assigned, swapping to a different
+	Driver is a sensitive change (pay, notifications, and accountability
+	all follow the Driver field) and cannot be made by directly editing the
+	field. It must go through request_driver_change() below, which requires
+	System Manager approval via manager_approval.approve_request() before
+	the Driver field is actually updated."""
+	if doc.is_new():
+		return
+
+	previous_driver = frappe.db.get_value("Truck Trip", doc.name, "driver")
+	if not previous_driver or doc.driver == previous_driver:
+		return
+
+	if doc.manager_approval_status == "Approved" and doc.new_driver_requested == doc.driver:
+		# This is manager_approval.approve_request() applying an already-approved
+		# change (it sets manager_approval_status to Approved and saves; the
+		# Driver field itself was changed here, in this same save, to match
+		# new_driver_requested). Allow it through, then clear the request.
+		doc.new_driver_requested = None
+		doc.driver_change_reason = None
+		return
+
+	frappe.throw(
+		f"Driver cannot be changed directly on an existing trip (was {previous_driver}, "
+		f"tried to set {doc.driver}). Use the 'Request Driver Change' action instead — it "
+		"requires System Manager approval before the Driver field is updated."
+	)
+
+
+@frappe.whitelist()
+def request_driver_change(trip_name, new_driver, reason=None):
+	"""Raises a Driver Change request for System Manager approval. Does NOT
+	change the Driver field itself — that only happens once
+	manager_approval.approve_request() approves this request, which then
+	re-saves the trip with Driver set to New Driver Requested."""
+	doc = frappe.get_doc("Truck Trip", trip_name)
+
+	if not doc.driver:
+		frappe.throw("This trip has no Driver assigned yet — set the Driver field directly instead.")
+	if new_driver == doc.driver:
+		frappe.throw("New Driver is the same as the current Driver.")
+
+	doc.new_driver_requested = new_driver
+	doc.driver_change_reason = reason
+	doc.manager_approval_status = "Pending Approval"
+	doc.approved_by = None
+	doc.approved_on = None
+	doc.save()
+
+	return doc.name
 
 
 def validate_truck_availability(doc, method=None):

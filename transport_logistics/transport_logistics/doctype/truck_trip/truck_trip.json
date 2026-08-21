@@ -37,7 +37,15 @@
   "pod_authenticated",
   "pod_authenticated_by",
   "pod_authenticated_on",
-  "remarks"
+  "remarks",
+  "section_break_approval",
+  "new_driver_requested",
+  "driver_change_reason",
+  "manager_approval_status",
+  "column_break_approval",
+  "approved_by",
+  "approved_on",
+  "approval_remarks"
  ],
  "fields": [
   {
@@ -262,6 +270,59 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Driver Change Approval",
+   "description": "Once a trip already has a Driver assigned, swapping to a different Driver requires System Manager approval. Use the 'Request Driver Change' action instead of editing Driver directly."
+  },
+  {
+   "fieldname": "new_driver_requested",
+   "fieldtype": "Link",
+   "label": "New Driver Requested",
+   "options": "Employee",
+   "read_only": 1,
+   "description": "Set by 'Request Driver Change'. Applied to the Driver field only once a System Manager approves this request."
+  },
+  {
+   "fieldname": "driver_change_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for Driver Change",
+   "read_only": 1
+  },
+  {
+   "fieldname": "manager_approval_status",
+   "fieldtype": "Select",
+   "label": "Manager Approval Status",
+   "options": "Not Required\nPending Approval\nApproved\nRejected",
+   "default": "Not Required",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved/Rejected By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved/Rejected On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_remarks",
+   "fieldtype": "Small Text",
+   "label": "Approval Remarks",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,

@@ -20,12 +20,29 @@ from frappe.model.document import Document
 from frappe.utils import flt, today
 
 from transport_logistics.transport_logistics.doctype.workshop.workshop import ACTIVE_JOB_STATUSES
+from transport_logistics.transport_logistics.manager_approval import (
+	block_submit_if_not_approved,
+	flag_pending_approval,
+)
 
 
 class WorkshopJobCard(Document):
 	def validate(self):
 		compute_costs(self)
 		validate_workshop_capacity(self)
+		enforce_spare_part_approval(self)
+
+
+def _spare_part_issuance_requires_approval(doc):
+	return flt(doc.parts_cost) > 0
+
+
+def enforce_spare_part_approval(doc, method=None):
+	"""Issuing spare parts (which physically depletes warehouse stock on
+	submit) requires System Manager approval before this job card can be
+	submitted."""
+	flag_pending_approval(doc, _spare_part_issuance_requires_approval)
+	block_submit_if_not_approved(doc, "spare part issuance")
 
 
 def compute_costs(doc, method=None):

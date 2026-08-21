@@ -5,6 +5,11 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
 
+from transport_logistics.transport_logistics.manager_approval import (
+	block_submit_if_not_approved,
+	flag_pending_approval,
+)
+
 
 class TruckFuelLog(Document):
 	def validate(self):
@@ -12,6 +17,19 @@ class TruckFuelLog(Document):
 		set_computed_fields(self)
 		set_extra_fuel_fields(self)
 		validate_extra_fuel_reason(self)
+		enforce_extra_fuel_approval(self)
+
+
+def _extra_fuel_requires_approval(doc):
+	return flt(doc.extra_fuel_litres) > 0
+
+
+def enforce_extra_fuel_approval(doc, method=None):
+	"""Fuel logged beyond the route's standard allowance must be signed off
+	by a System Manager before the log can be submitted, on top of the
+	driver/clerk's own written reason captured above."""
+	flag_pending_approval(doc, _extra_fuel_requires_approval)
+	block_submit_if_not_approved(doc, "extra fuel over the route standard")
 
 
 def validate_reason_for_fuelling(doc):

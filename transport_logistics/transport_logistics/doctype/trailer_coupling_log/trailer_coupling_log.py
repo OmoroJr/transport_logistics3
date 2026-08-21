@@ -4,10 +4,28 @@
 import frappe
 from frappe.model.document import Document
 
+from transport_logistics.transport_logistics.manager_approval import (
+	block_submit_if_not_approved,
+	flag_pending_approval,
+)
+
 
 class TrailerCouplingLog(Document):
 	def validate(self):
 		validate_coupling(self)
+		enforce_decoupling_approval(self)
+
+
+def _decoupling_requires_approval(doc):
+	return doc.action == "Decoupled"
+
+
+def enforce_decoupling_approval(doc, method=None):
+	"""Trailer Decoupling is operationally sensitive (a trailer left
+	uncoupled/unattended is a security and cargo-integrity risk), so it must
+	be signed off by a System Manager before the log can be submitted."""
+	flag_pending_approval(doc, _decoupling_requires_approval)
+	block_submit_if_not_approved(doc, "a trailer decoupling")
 
 
 def validate_coupling(doc, method=None):

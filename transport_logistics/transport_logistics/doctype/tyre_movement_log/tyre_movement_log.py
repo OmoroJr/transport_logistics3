@@ -15,10 +15,28 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate
 
+from transport_logistics.transport_logistics.manager_approval import (
+	block_submit_if_not_approved,
+	flag_pending_approval,
+)
+
 
 class TyreMovementLog(Document):
 	def validate(self):
 		validate_movement(self)
+		enforce_tyre_change_approval(self)
+
+
+def _tyre_change_requires_approval(doc):
+	return doc.movement_type in ("Fitted", "Removed")
+
+
+def enforce_tyre_change_approval(doc, method=None):
+	"""Fitting or removing a tyre (i.e. a tyre change) requires System
+	Manager sign-off before this log can be submitted. Rotations,
+	retreading, and scrapping are left unrestricted."""
+	flag_pending_approval(doc, _tyre_change_requires_approval)
+	block_submit_if_not_approved(doc, "a tyre change (fit/removal)")
 
 
 def build_position_label(vehicle_type, is_spare, axle_type, axle_number, side):

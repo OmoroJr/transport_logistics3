@@ -25,7 +25,13 @@
   "column_break_cost",
   "remarks",
   "company",
-  "journal_entry"
+  "journal_entry",
+  "section_break_approval",
+  "manager_approval_status",
+  "column_break_approval",
+  "approved_by",
+  "approved_on",
+  "approval_remarks"
  ],
  "fields": [
   {
@@ -164,6 +170,46 @@
    "fieldtype": "Link",
    "label": "Journal Entry",
    "options": "Journal Entry",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Manager Approval",
+   "depends_on": "eval:[\"Fitted\",\"Removed\"].includes(doc.movement_type)"
+  },
+  {
+   "fieldname": "manager_approval_status",
+   "fieldtype": "Select",
+   "label": "Manager Approval Status",
+   "options": "Not Required\nPending Approval\nApproved\nRejected",
+   "default": "Not Required",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Fitting or removing a tyre (a tyre change) requires System Manager approval before this log can be submitted."
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved/Rejected By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved/Rejected On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_remarks",
+   "fieldtype": "Small Text",
+   "label": "Approval Remarks",
    "read_only": 1
   }
  ],

@@ -37,7 +37,13 @@
   "section_break_links",
   "maintenance_log",
   "stock_entry",
-  "odometer_reading"
+  "odometer_reading",
+  "section_break_approval",
+  "manager_approval_status",
+  "column_break_approval",
+  "approved_by",
+  "approved_on",
+  "approval_remarks"
  ],
  "fields": [
   {
@@ -237,6 +243,46 @@
    "fieldname": "odometer_reading",
    "fieldtype": "Float",
    "label": "Odometer Reading At Job (Km)"
+  },
+  {
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Manager Approval",
+   "depends_on": "eval:doc.parts_cost > 0"
+  },
+  {
+   "fieldname": "manager_approval_status",
+   "fieldtype": "Select",
+   "label": "Manager Approval Status",
+   "options": "Not Required\nPending Approval\nApproved\nRejected",
+   "default": "Not Required",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Spare part issuance requires System Manager approval before this job card can be submitted (parts are only physically issued from the warehouse on submit)."
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved/Rejected By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approved_on",
+   "fieldtype": "Datetime",
+   "label": "Approved/Rejected On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "approval_remarks",
+   "fieldtype": "Small Text",
+   "label": "Approval Remarks",
+   "read_only": 1
   }
  ],
  "is_submittable": 1,
