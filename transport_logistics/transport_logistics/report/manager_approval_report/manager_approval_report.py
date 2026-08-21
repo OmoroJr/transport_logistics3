@@ -32,6 +32,7 @@ def get_columns():
 		{"label": _("Details"), "fieldname": "details", "fieldtype": "Data", "width": 260},
 		{"label": _("Requested By"), "fieldname": "requested_by", "fieldtype": "Data", "width": 150},
 		{"label": _("Approval Status"), "fieldname": "status", "fieldtype": "Data", "width": 130},
+		{"label": _("Actions"), "fieldname": "actions", "fieldtype": "Data", "width": 130},
 		{"label": _("Approved/Rejected By"), "fieldname": "approved_by", "fieldtype": "Data", "width": 150},
 		{"label": _("Approved/Rejected On"), "fieldname": "approved_on", "fieldtype": "Datetime", "width": 160},
 	]
@@ -51,6 +52,8 @@ def get_data(filters):
 		rows = [r for r in rows if r["status"] == filters.get("status")]
 
 	rows.sort(key=lambda r: r.get("date") or "", reverse=True)
+	for r in rows:
+		r["actions"] = ""  # rendered client-side in the report's formatter
 	return rows
 
 

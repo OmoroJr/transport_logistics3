@@ -48,8 +48,10 @@ frappe.query_reports["Manager Approval Report"] = {
 		// below) are the primary action -- they don't depend on the
 		// datatable's checkbox column, which isn't reliably present on
 		// script reports. Delegate the click from the report's wrapper so
-		// it keeps working after every refresh/re-render.
-		report.page.wrapper.on("click", ".manager-approval-action", function (e) {
+		// it keeps working after every refresh/re-render. report.page.wrapper
+		// is a plain DOM node, not a jQuery object, so it must be wrapped
+		// with $() before .on() is usable.
+		$(report.page.wrapper).on("click", ".manager-approval-action", function (e) {
 			e.preventDefault();
 			const $el = $(this);
 			const action = $el.data("action");
@@ -69,20 +71,20 @@ frappe.query_reports["Manager Approval Report"] = {
 				Rejected: "var(--red-600)",
 			};
 			value = `<span style="color: ${colors[data.status] || "inherit"}; font-weight: 600;">${value}</span>`;
-
-			if (data.status === "Pending Approval") {
-				const doctype = frappe.utils.escape_html(data.reference_doctype || "");
-				const name = frappe.utils.escape_html(data.reference_name || "");
-				value += `
-					&nbsp;
-					<a href="#" class="manager-approval-action" data-action="approve"
-					   data-doctype="${doctype}" data-name="${name}">${__("Approve")}</a>
-					&nbsp;|&nbsp;
-					<a href="#" class="manager-approval-action text-danger" data-action="reject"
-					   data-doctype="${doctype}" data-name="${name}">${__("Reject")}</a>
-				`;
-			}
 		}
+
+		if (column.fieldname === "actions" && data.status === "Pending Approval") {
+			const doctype = frappe.utils.escape_html(data.reference_doctype || "");
+			const name = frappe.utils.escape_html(data.reference_name || "");
+			value = `
+				<a href="#" class="manager-approval-action" data-action="approve"
+				   data-doctype="${doctype}" data-name="${name}">${__("Approve")}</a>
+				&nbsp;|&nbsp;
+				<a href="#" class="manager-approval-action text-danger" data-action="reject"
+				   data-doctype="${doctype}" data-name="${name}">${__("Reject")}</a>
+			`;
+		}
+
 		return value;
 	},
 };
