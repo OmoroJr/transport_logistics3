@@ -22,6 +22,12 @@ doctype_list_js = {
     "Truck": "transport_logistics/doctype/truck/truck_list.js",
 }
 
+# Navbar "Approvals" notification widget (System Manager only) -- shows
+# pending Manager Approval requests with inline Approve/Reject buttons.
+# See transport_logistics/public/js/approval_notifications.js and
+# manager_approval.py.
+app_include_js = ["public/js/approval_notifications.js"]
+
 # Document Events
 doc_events = {
     "Truck Fuel Log": {

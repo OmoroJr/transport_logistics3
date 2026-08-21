@@ -24,6 +24,16 @@ so submission (docstatus 1) is refused until a System Manager has approved.
 approve_request()/reject_request() are the only way manager_approval_status
 can move to Approved/Rejected — the field itself is read-only on every
 doctype, so a Transport Manager/User can request but never self-approve.
+
+get_pending_approvals() backs the navbar "Approvals" notification widget
+(public/js/approval_notifications.js): it lists everything currently
+Pending Approval, System Manager-only, by reusing the Manager Approval
+Report's row-building logic so there is one source of truth for "what
+counts as a pending request" across the report and the widget. A request
+disappears from the widget the moment it's approved/rejected — approve_request()/
+reject_request() broadcast a realtime ping so it drops off every connected
+System Manager's list immediately, and it also simply stops matching the
+Pending Approval filter on the next poll.
 """
 
 import frappe
@@ -31,6 +41,7 @@ from frappe import _
 from frappe.utils import now_datetime
 
 APPROVER_ROLES = ("System Manager",)
+APPROVAL_UPDATE_EVENT = "transport_logistics_approval_update"
 
 # doctype -> (label shown in messages/report, function that decides whether
 # THIS particular save currently describes a sensitive action)
@@ -59,6 +70,11 @@ def flag_pending_approval(doc, requires_approval_fn):
 		doc.manager_approval_status = "Pending Approval"
 		doc.approved_by = None
 		doc.approved_on = None
+		# Best-effort nudge for the navbar widget; if validate() goes on to
+		# throw for an unrelated reason the save never lands so nothing was
+		# actually raised, but the ping already fired -- harmless, since the
+		# widget just re-fetches the (unchanged) pending list.
+		_notify_approval_change()
 
 
 def block_submit_if_not_approved(doc, label):
@@ -94,6 +110,41 @@ def _check_is_approver():
 		)
 
 
+def _notify_approval_change():
+	"""Ping every connected user so the navbar approvals widget refreshes.
+	No user/room is passed, so this broadcasts site-wide; that's fine here
+	because the endpoint it triggers a refresh of (get_pending_approvals)
+	is itself System Manager-gated, so non-approvers just get an empty
+	list back."""
+	frappe.publish_realtime(APPROVAL_UPDATE_EVENT, {})
+
+
+@frappe.whitelist()
+def get_pending_approvals():
+	"""Everything currently Pending Approval, for the navbar widget. Reuses
+	the Manager Approval Report's row builder so the widget and the report
+	can never disagree about what's pending."""
+	_check_is_approver()
+
+	from transport_logistics.transport_logistics.report.manager_approval_report.manager_approval_report import (
+		get_data,
+	)
+
+	rows = get_data(frappe._dict({"status": "Pending Approval"}))
+	return [
+		{
+			"request_type": r.get("request_type"),
+			"reference_doctype": r.get("reference_doctype"),
+			"reference_name": r.get("reference_name"),
+			"truck": r.get("truck"),
+			"details": r.get("details"),
+			"requested_by": r.get("requested_by"),
+			"date": str(r["date"]) if r.get("date") else None,
+		}
+		for r in rows
+	]
+
+
 def _apply_approved_effect(doc):
 	"""Doctype-specific effect of an approval, applied to the in-memory doc
 	before it's saved. Every doctype except Truck Trip just needs the status
@@ -117,6 +168,7 @@ def approve_request(doctype, name):
 	doc.approved_on = now_datetime()
 	_apply_approved_effect(doc)
 	doc.save(ignore_permissions=True)
+	_notify_approval_change()
 	return doc.name
 
 
@@ -134,4 +186,5 @@ def reject_request(doctype, name, remarks=None):
 	if remarks and doc.meta.has_field("approval_remarks"):
 		doc.approval_remarks = remarks
 	doc.save(ignore_permissions=True)
+	_notify_approval_change()
 	return doc.name
