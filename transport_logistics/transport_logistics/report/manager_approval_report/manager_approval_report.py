@@ -103,12 +103,31 @@ def get_driver_change_rows(filters):
 
 
 def get_trailer_decoupling_rows(filters):
-	conditions, values = _base_conditions(filters, "Trailer Coupling Log")
+	# Trailer Coupling Log has no company column of its own — company is
+	# only known via the linked Truck, so join through tabTruck for that
+	# filter instead of assuming a company column exists on this table.
+	conditions = " and tcl.manager_approval_status != 'Not Required'"
+	values = {}
+	if filters.get("company"):
+		conditions += " and t.company = %(company)s"
+		values["company"] = filters.get("company")
+	if filters.get("truck"):
+		conditions += " and tcl.truck = %(truck)s"
+		values["truck"] = filters.get("truck")
+	if filters.get("from_date"):
+		conditions += " and tcl.date >= %(from_date)s"
+		values["from_date"] = filters.get("from_date")
+	if filters.get("to_date"):
+		conditions += " and tcl.date <= %(to_date)s"
+		values["to_date"] = filters.get("to_date")
+
 	records = frappe.db.sql(
 		f"""
-		select name, truck, trailer, date, owner, manager_approval_status, approved_by, approved_on
-		from `tabTrailer Coupling Log`
-		where action = 'Decoupled' {conditions}
+		select tcl.name, tcl.truck, tcl.trailer, tcl.date, tcl.owner,
+		       tcl.manager_approval_status, tcl.approved_by, tcl.approved_on
+		from `tabTrailer Coupling Log` tcl
+		left join `tabTruck` t on t.name = tcl.truck
+		where tcl.action = 'Decoupled' {conditions}
 		""",
 		values,
 		as_dict=True,

@@ -44,72 +44,76 @@ frappe.query_reports["Manager Approval Report"] = {
 	],
 
 	onload: function (report) {
-		report.page.add_inner_button(__("Approve..."), function () {
-			prompt_for_decision(report, "approve");
-		});
-		report.page.add_inner_button(__("Reject..."), function () {
-			prompt_for_decision(report, "reject");
+		// Inline Approve/Reject links (rendered per-row by the formatter
+		// below) are the primary action -- they don't depend on the
+		// datatable's checkbox column, which isn't reliably present on
+		// script reports. Delegate the click from the report's wrapper so
+		// it keeps working after every refresh/re-render.
+		report.page.wrapper.on("click", ".manager-approval-action", function (e) {
+			e.preventDefault();
+			const $el = $(this);
+			const action = $el.data("action");
+			const doctype = $el.data("doctype");
+			const name = $el.data("name");
+			handle_decision(report, action, doctype, name);
 		});
 	},
 
 	formatter: function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
+
 		if (column.fieldname === "status") {
+			const colors = {
+				"Pending Approval": "var(--orange-600)",
+				Approved: "var(--green-600)",
+				Rejected: "var(--red-600)",
+			};
+			value = `<span style="color: ${colors[data.status] || "inherit"}; font-weight: 600;">${value}</span>`;
+
 			if (data.status === "Pending Approval") {
-				value = `<span style="color: var(--orange-600); font-weight: 600;">${value}</span>`;
-			} else if (data.status === "Approved") {
-				value = `<span style="color: var(--green-600); font-weight: 600;">${value}</span>`;
-			} else if (data.status === "Rejected") {
-				value = `<span style="color: var(--red-600); font-weight: 600;">${value}</span>`;
+				const doctype = frappe.utils.escape_html(data.reference_doctype || "");
+				const name = frappe.utils.escape_html(data.reference_name || "");
+				value += `
+					&nbsp;
+					<a href="#" class="manager-approval-action" data-action="approve"
+					   data-doctype="${doctype}" data-name="${name}">${__("Approve")}</a>
+					&nbsp;|&nbsp;
+					<a href="#" class="manager-approval-action text-danger" data-action="reject"
+					   data-doctype="${doctype}" data-name="${name}">${__("Reject")}</a>
+				`;
 			}
 		}
 		return value;
 	},
 };
 
-function prompt_for_decision(report, action) {
-	// Restricted to System Manager anyway (enforced server-side by
-	// manager_approval.approve_request/reject_request), but only offered
-	// here at all when a Pending Approval row is selected for convenience.
-	const checked = (report.get_checked_items && report.get_checked_items()) || [];
-	const pending = checked.filter((r) => r.status === "Pending Approval");
-
-	if (!pending.length) {
-		frappe.msgprint(__("Check one or more Pending Approval rows first."));
+function handle_decision(report, action, doctype, name) {
+	// System Manager-only is enforced server-side in
+	// manager_approval.approve_request/reject_request regardless of what
+	// happens client-side here.
+	if (action === "approve") {
+		frappe.confirm(__("Approve this {0} request ({1})?", [doctype, name]), () => {
+			call_decision(report, "approve_request", doctype, name);
+		});
 		return;
 	}
 
-	const fields = [
-		{
-			fieldname: "note",
-			fieldtype: "HTML",
-			options: `<p>${__("{0} {1} request(s)?", [action === "approve" ? __("Approve") : __("Reject"), pending.length])}</p>`,
-		},
-	];
-	if (action === "reject") {
-		fields.push({ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks") });
-	}
+	frappe.prompt(
+		[{ fieldname: "remarks", fieldtype: "Small Text", label: __("Rejection Remarks") }],
+		(values) => call_decision(report, "reject_request", doctype, name, values.remarks),
+		__("Reject Request"),
+		__("Reject")
+	);
+}
 
-	frappe.prompt(fields, (values) => {
-		const method =
-			action === "approve"
-				? "transport_logistics.transport_logistics.manager_approval.approve_request"
-				: "transport_logistics.transport_logistics.manager_approval.reject_request";
-
-		frappe.run_serially(
-			pending.map((row) => () =>
-				frappe.call({
-					method: method,
-					args: {
-						doctype: row.reference_doctype,
-						name: row.reference_name,
-						remarks: values.remarks,
-					},
-				})
-			)
-		).then(() => {
+function call_decision(report, method_name, doctype, name, remarks) {
+	frappe.call({
+		method: `transport_logistics.transport_logistics.manager_approval.${method_name}`,
+		args: { doctype, name, remarks },
+		freeze: true,
+		callback: function () {
 			frappe.show_alert({ message: __("Done"), indicator: "green" });
 			report.refresh();
-		});
-	}, __(action === "approve" ? "Approve Requests" : "Reject Requests"), __("Submit"));
+		},
+	});
 }
