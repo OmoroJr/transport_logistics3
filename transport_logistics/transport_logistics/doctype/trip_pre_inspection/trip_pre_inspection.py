@@ -14,6 +14,11 @@ fails the whole inspection. A Fail does NOT block saving/submitting this
 document itself (the inspector still needs to be able to record and submit
 a failed inspection) — it's the Truck Trip side that refuses to depart on
 it.
+
+Tyre Pressure Check is a separate, entirely optional section: it never
+affects Overall Status and is never required to submit. It exists for
+record-keeping and to feed the Pre Trip Inspection Report — see
+../../report/pre_trip_inspection_report/.
 """
 
 import frappe
@@ -44,6 +49,7 @@ class TripPreInspection(Document):
 		populate_default_items(self)
 		validate_items(self)
 		compute_overall_status(self)
+		compute_tyre_pressure_status(self)
 
 
 def populate_default_items(doc, method=None):
@@ -71,6 +77,26 @@ def compute_overall_status(doc, method=None):
 		doc.overall_status = ""
 		return
 	doc.overall_status = "Fail" if any(row.status == "Not OK" for row in doc.items) else "Pass"
+
+
+def compute_tyre_pressure_status(doc, method=None):
+	"""Entirely optional and informational — a tyre pressure reading never
+	affects Overall Status or blocks anything downstream. Only fills in
+	Status when the inspector left it blank and gave a Standard (PSI) to
+	compare against; a Status the inspector set by hand is always left
+	alone. Tolerance is a simple flat +/-10% band, since this is a quick
+	pre-trip check, not a calibrated measurement."""
+	for row in doc.tyre_pressures:
+		if row.status or not row.standard_psi or not row.pressure_psi:
+			continue
+		lower = row.standard_psi * 0.9
+		upper = row.standard_psi * 1.1
+		if row.pressure_psi < lower:
+			row.status = "Low"
+		elif row.pressure_psi > upper:
+			row.status = "High"
+		else:
+			row.status = "OK"
 
 
 def notify_on_fail(doc, method=None):

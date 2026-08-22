@@ -13,6 +13,9 @@
   "odometer_reading",
   "section_break_items",
   "items",
+  "section_break_tyre_pressure",
+  "tyre_pressure_checked",
+  "tyre_pressures",
   "section_break_result",
   "overall_status",
   "column_break_result",
@@ -71,6 +74,27 @@
    "options": "Trip Pre Inspection Item",
    "reqd": 1,
    "description": "Pre-filled with the standard checklist when a new inspection is created for a Truck \u2014 add or remove rows to suit."
+  },
+  {
+   "fieldname": "section_break_tyre_pressure",
+   "fieldtype": "Section Break",
+   "label": "Tyre Pressure Check (Optional)",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "tyre_pressure_checked",
+   "fieldtype": "Check",
+   "label": "Tyre Pressure Checked",
+   "default": "0",
+   "description": "Tick if tyre pressures were actually measured for this inspection. Entirely optional \u2014 leave unticked and the table empty if a gauge wasn't available; it has no effect on Overall Status."
+  },
+  {
+   "fieldname": "tyre_pressures",
+   "fieldtype": "Table",
+   "label": "Tyre Pressure Readings",
+   "options": "Trip Pre Inspection Tyre Pressure",
+   "depends_on": "eval:doc.tyre_pressure_checked",
+   "description": "Optional per-tyre pressure readings, for record-keeping only \u2014 a Low/High reading here does not fail the inspection or block the trip."
   },
   {
    "fieldname": "section_break_result",

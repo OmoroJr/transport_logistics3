@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "creation": "2026-01-01 00:00:00",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "position",
+  "tyre",
+  "pressure_psi",
+  "standard_psi",
+  "status",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "position",
+   "fieldtype": "Data",
+   "label": "Position",
+   "reqd": 1,
+   "in_list_view": 1,
+   "description": "e.g. Front Left, Rear Right Outer \u2014 free text so it fits any axle configuration."
+  },
+  {
+   "fieldname": "tyre",
+   "fieldtype": "Link",
+   "label": "Tyre",
+   "options": "Tyre",
+   "in_list_view": 1,
+   "description": "Optional \u2014 link the specific Tyre record if it's tracked, for traceability alongside Tyre Depth Inspection."
+  },
+  {
+   "fieldname": "pressure_psi",
+   "fieldtype": "Float",
+   "label": "Pressure (PSI)",
+   "precision": "1",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "standard_psi",
+   "fieldtype": "Float",
+   "label": "Standard (PSI)",
+   "precision": "1",
+   "description": "Manufacturer/fleet-recommended pressure for this position, for reference only \u2014 not enforced."
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nOK\nLow\nHigh",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
+  }
+ ],
+ "istable": 1,
+ "links": [],
+ "modified": "2026-01-01 00:00:00",
+ "modified_by": "Administrator",
+ "module": "Transport Logistics",
+ "name": "Trip Pre Inspection Tyre Pressure",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
