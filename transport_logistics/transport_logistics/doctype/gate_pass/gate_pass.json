@@ -22,6 +22,7 @@
   "column_break_pedestrian",
   "phone_number",
   "host_employee",
+  "visitor_card_number",
   "section_break_times",
   "gate_in_time",
   "gate_out_time",
@@ -54,6 +55,7 @@
   {"fieldname": "column_break_pedestrian", "fieldtype": "Column Break"},
   {"fieldname": "phone_number", "fieldtype": "Data", "label": "Phone Number"},
   {"fieldname": "host_employee", "fieldtype": "Link", "label": "Person / Department Visiting", "options": "Employee"},
+  {"fieldname": "visitor_card_number", "fieldtype": "Data", "label": "Visitor Card Number", "description": "Number on the physical visitor card issued at the gate — used to match the card back to this pass when the visitor departs."},
 
   {"fieldname": "section_break_times", "fieldtype": "Section Break", "label": "Gate Times"},
   {"fieldname": "gate_in_time", "fieldtype": "Datetime", "label": "Gate In Time", "reqd": 1, "default": "now", "in_list_view": 1},
