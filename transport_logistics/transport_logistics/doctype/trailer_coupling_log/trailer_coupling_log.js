@@ -1,4 +1,8 @@
 frappe.ui.form.on("Trailer Coupling Log", {
+	refresh(frm) {
+		transport_logistics.manager_approval.add_buttons(frm);
+	},
+
 	trailer(frm) {
 		if (frm.doc.trailer && frm.is_new()) {
 			frappe.db.get_value("Trailer", frm.doc.trailer, "current_truck").then((r) => {

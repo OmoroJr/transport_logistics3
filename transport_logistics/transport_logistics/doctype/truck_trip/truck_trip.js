@@ -41,6 +41,8 @@ frappe.ui.form.on("Truck Trip", {
 	refresh(frm) {
 		if (frm.is_new()) return;
 
+		transport_logistics.manager_approval.add_buttons(frm);
+
 		if (frm.doc.status === "Planned") {
 			frm.add_custom_button(__("Request Authority to Load"), () => {
 				frappe.new_doc("Authority to Load", { truck: frm.doc.truck, truck_trip: frm.doc.name });

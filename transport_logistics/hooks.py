@@ -26,7 +26,10 @@ doctype_list_js = {
 # pending Manager Approval requests with inline Approve/Reject buttons.
 # See transport_logistics/public/js/approval_notifications.js and
 # manager_approval.py.
-app_include_js = ["/assets/transport_logistics/js/approval_notifications.js"]
+app_include_js = [
+    "/assets/transport_logistics/js/approval_notifications.js",
+    "/assets/transport_logistics/js/manager_approval_actions.js",
+]
 
 # Document Events
 doc_events = {

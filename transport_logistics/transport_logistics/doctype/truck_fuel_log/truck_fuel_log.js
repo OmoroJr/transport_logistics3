@@ -1,4 +1,8 @@
 frappe.ui.form.on("Truck Fuel Log", {
+	refresh(frm) {
+		transport_logistics.manager_approval.add_buttons(frm);
+	},
+
 	setup(frm) {
 		frm.set_query("truck_trip", () => ({
 			filters: { truck: frm.doc.truck || "" },

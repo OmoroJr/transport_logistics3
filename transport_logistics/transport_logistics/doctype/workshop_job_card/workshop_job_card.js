@@ -20,6 +20,8 @@ frappe.ui.form.on("Workshop Job Card", {
 	other_cost(frm) { calc_totals(frm); },
 
 	refresh(frm) {
+		transport_logistics.manager_approval.add_buttons(frm);
+
 		if (!frm.is_new() && frm.doc.maintenance_log) {
 			frm.add_custom_button(__("View Maintenance Log"), () => {
 				frappe.set_route("Form", "Truck Maintenance Log", frm.doc.maintenance_log);
