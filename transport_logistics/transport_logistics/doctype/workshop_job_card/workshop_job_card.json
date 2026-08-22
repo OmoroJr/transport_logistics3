@@ -37,6 +37,7 @@
   "section_break_links",
   "maintenance_log",
   "stock_entry",
+  "trip_pre_inspection",
   "odometer_reading",
   "section_break_approval",
   "manager_approval_status",
@@ -238,6 +239,14 @@
    "label": "Stock Entry (Parts Issued)",
    "options": "Stock Entry",
    "read_only": 1
+  },
+  {
+   "fieldname": "trip_pre_inspection",
+   "fieldtype": "Link",
+   "label": "Trip Pre Inspection",
+   "options": "Trip Pre Inspection",
+   "read_only": 1,
+   "description": "Set automatically when this job card was auto-created from a failed Trip Pre Inspection."
   },
   {
    "fieldname": "odometer_reading",

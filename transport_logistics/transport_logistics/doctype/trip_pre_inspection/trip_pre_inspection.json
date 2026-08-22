@@ -6,6 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "truck",
+  "truck_trip",
   "inspection_date",
   "column_break_1",
   "company",
@@ -19,7 +20,9 @@
   "section_break_result",
   "overall_status",
   "column_break_result",
-  "remarks"
+  "remarks",
+  "section_break_links",
+  "workshop_job_card"
  ],
  "fields": [
   {
@@ -30,6 +33,16 @@
    "reqd": 1,
    "in_list_view": 1,
    "in_standard_filter": 1
+  },
+  {
+   "fieldname": "truck_trip",
+   "fieldtype": "Link",
+   "label": "Truck Trip",
+   "options": "Truck Trip",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The trip this pre-departure check is for. Must be for the same Truck selected above."
   },
   {
    "fieldname": "inspection_date",
@@ -119,6 +132,19 @@
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "section_break_links",
+   "fieldtype": "Section Break",
+   "label": "Links (auto-filled)"
+  },
+  {
+   "fieldname": "workshop_job_card",
+   "fieldtype": "Link",
+   "label": "Workshop Job Card",
+   "options": "Workshop Job Card",
+   "read_only": 1,
+   "description": "Auto-created when this inspection fails, so the truck is sent to workshop for the faults noted below."
   }
  ],
  "is_submittable": 1,

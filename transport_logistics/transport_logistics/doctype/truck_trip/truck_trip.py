@@ -326,7 +326,7 @@ def validate_pretrip_inspection_locked(doc, method=None):
 	inspection = frappe.db.get_value(
 		"Trip Pre Inspection",
 		doc.pre_trip_inspection,
-		["docstatus", "truck", "overall_status", "inspection_date"],
+		["docstatus", "truck", "truck_trip", "overall_status", "inspection_date"],
 		as_dict=True,
 	)
 	if not inspection:
@@ -340,6 +340,12 @@ def validate_pretrip_inspection_locked(doc, method=None):
 		frappe.throw(
 			f"Trip Pre Inspection {doc.pre_trip_inspection} is for truck {inspection.truck}, "
 			f"which doesn't match this trip's truck ({doc.truck})."
+		)
+	if inspection.truck_trip and inspection.truck_trip != doc.name:
+		frappe.throw(
+			f"Trip Pre Inspection {doc.pre_trip_inspection} was made for a different trip "
+			f"({inspection.truck_trip}), not this one. Link the Trip Pre Inspection that was "
+			"created for this specific trip."
 		)
 	if inspection.overall_status != "Pass":
 		frappe.throw(

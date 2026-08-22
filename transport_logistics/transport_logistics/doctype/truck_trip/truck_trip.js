@@ -22,6 +22,13 @@ frappe.ui.form.on("Truck Trip", {
 			if (frm.doc.trip_date) filters.date = ["<=", frm.doc.trip_date];
 			return { filters };
 		});
+
+		frm.set_query("pre_trip_inspection", () => {
+			const filters = { docstatus: 1, overall_status: "Pass" };
+			if (frm.doc.truck) filters.truck = frm.doc.truck;
+			if (!frm.is_new()) filters.truck_trip = frm.doc.name;
+			return { filters };
+		});
 	},
 
 	start_odometer(frm) { calc_distance(frm); },
@@ -47,6 +54,12 @@ frappe.ui.form.on("Truck Trip", {
 			frm.add_custom_button(__("Request Authority to Load"), () => {
 				frappe.new_doc("Authority to Load", { truck: frm.doc.truck, truck_trip: frm.doc.name });
 			});
+
+			if (!frm.doc.pre_trip_inspection) {
+				frm.add_custom_button(__("Create Pre-Trip Inspection"), () => {
+					frappe.new_doc("Trip Pre Inspection", { truck: frm.doc.truck, truck_trip: frm.doc.name });
+				});
+			}
 		}
 
 		if (frm.doc.status === "Ongoing" && frm.doc.offload_status === "Not Offloaded") {

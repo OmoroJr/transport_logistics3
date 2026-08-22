@@ -145,7 +145,10 @@ doc_events = {
         "validate": "transport_logistics.transport_logistics.doctype.shipment.shipment.compute_charge_totals",
     },
     "Trip Pre Inspection": {
-        "on_submit": "transport_logistics.transport_logistics.doctype.trip_pre_inspection.trip_pre_inspection.notify_on_fail",
+        "on_submit": [
+            "transport_logistics.transport_logistics.doctype.trip_pre_inspection.trip_pre_inspection.send_truck_to_workshop",
+            "transport_logistics.transport_logistics.doctype.trip_pre_inspection.trip_pre_inspection.notify_on_fail",
+        ],
     },
 }
 

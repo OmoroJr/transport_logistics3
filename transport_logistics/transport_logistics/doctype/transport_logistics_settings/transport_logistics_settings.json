@@ -40,6 +40,7 @@
   "mpesa_result_url",
   "mpesa_queue_timeout_url",
   "section_workshop",
+  "default_workshop",
   "default_workshop_warehouse",
   "column_break_workshop",
   "default_labour_rate",
@@ -314,6 +315,13 @@
    "fieldname": "section_workshop",
    "fieldtype": "Section Break",
    "label": "Workshop"
+  },
+  {
+   "fieldname": "default_workshop",
+   "fieldtype": "Link",
+   "label": "Default Workshop",
+   "options": "Workshop",
+   "description": "Fallback used when a Workshop Job Card is auto-created (e.g. by a failed Trip Pre Inspection) and no active Workshop with a free bay can be found automatically. Leave blank to leave the Job Card's Workshop unassigned in that case, for manual triage."
   },
   {
    "fieldname": "default_workshop_warehouse",
