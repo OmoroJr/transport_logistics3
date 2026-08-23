@@ -22,6 +22,10 @@
   "column_break_odo",
   "full_tank",
   "fuel_station",
+  "section_break_fuel_level",
+  "fuel_level_before_refuel",
+  "column_break_fuel_level",
+  "fuel_level_after_refuel",
   "section_break_qty",
   "fuel_qty_litres",
   "rate_per_litre",
@@ -160,6 +164,32 @@
    "fieldname": "fuel_station",
    "fieldtype": "Data",
    "label": "Fuel Station"
+  },
+  {
+   "fieldname": "section_break_fuel_level",
+   "fieldtype": "Section Break",
+   "label": "Fuel Level Check (Optional)",
+   "collapsible": 1,
+   "description": "Only relevant if the tank level was actually checked (dipstick, or a known tank capacity) before this fill-up \u2014 leave blank otherwise."
+  },
+  {
+   "fieldname": "fuel_level_before_refuel",
+   "fieldtype": "Float",
+   "label": "Fuel Level Before Refuelling (Litres)",
+   "precision": "1",
+   "description": "Measured via dipstick, or estimated against the truck's known tank capacity."
+  },
+  {
+   "fieldname": "column_break_fuel_level",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "fuel_level_after_refuel",
+   "fieldtype": "Float",
+   "label": "Fuel Level After Refuelling (Litres)",
+   "precision": "1",
+   "read_only": 1,
+   "description": "Computed: Fuel Level Before + Fuel Quantity purchased."
   },
   {
    "fieldname": "section_break_qty",

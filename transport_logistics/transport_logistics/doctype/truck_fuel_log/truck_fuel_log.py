@@ -18,6 +18,7 @@ class TruckFuelLog(Document):
 		set_extra_fuel_fields(self)
 		validate_extra_fuel_reason(self)
 		enforce_extra_fuel_approval(self)
+		validate_fuel_level(self)
 
 
 def _extra_fuel_requires_approval(doc):
@@ -110,6 +111,44 @@ def set_computed_fields(doc, method=None):
 		doc.fuel_efficiency_km_per_litre = doc.distance_covered / doc.fuel_qty_litres
 	else:
 		doc.fuel_efficiency_km_per_litre = 0
+
+
+def validate_fuel_level(doc, method=None):
+	"""Optional dipstick/known-capacity check — only runs if the driver/clerk
+	actually recorded a pre-refuel level for this fill-up. Cross-checked
+	against the truck's known tank capacity where available: a computed
+	post-refuel level above capacity (beyond a small measurement-tolerance
+	buffer) is a physical impossibility, so it's flagged as a likely data
+	entry error rather than silently accepted."""
+	if not doc.fuel_level_before_refuel:
+		doc.fuel_level_after_refuel = 0
+		return
+
+	if doc.fuel_level_before_refuel < 0:
+		frappe.throw("Fuel Level Before Refuelling cannot be negative.")
+
+	doc.fuel_level_after_refuel = flt(doc.fuel_level_before_refuel) + flt(doc.fuel_qty_litres)
+
+	tank_capacity = frappe.db.get_value("Truck", doc.truck, "tank_capacity_litres")
+	if not tank_capacity:
+		return  # nothing to cross-check against
+
+	if doc.fuel_level_before_refuel > tank_capacity:
+		frappe.throw(
+			f"Fuel Level Before Refuelling ({doc.fuel_level_before_refuel}L) is more than this "
+			f"truck's tank capacity ({tank_capacity}L). Check the reading, or update the "
+			f"truck's Tank Capacity if it's wrong."
+		)
+
+	tolerance = tank_capacity * 1.05  # allow ~5% for dipstick/measurement imprecision
+	if doc.fuel_level_after_refuel > tolerance:
+		frappe.throw(
+			f"Fuel Level Before ({doc.fuel_level_before_refuel}L) + Fuel Quantity "
+			f"({doc.fuel_qty_litres}L) = {doc.fuel_level_after_refuel}L, which exceeds this "
+			f"truck's tank capacity ({tank_capacity}L) by more than a reasonable margin. "
+			"One of these figures is likely off — check the pre-refuel reading, the litres "
+			"purchased, or the truck's configured Tank Capacity."
+		)
 
 
 def set_extra_fuel_fields(doc):

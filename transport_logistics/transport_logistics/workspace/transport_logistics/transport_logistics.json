@@ -182,7 +182,14 @@
   {
    "label": "Payments & Reports",
    "type": "Card Break",
-   "link_count": 19
+   "link_count": 20
+  },
+  {
+   "label": "Vehicle Booking Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Vehicle Booking Register",
+   "is_query_report": 1
   },
   {
    "label": "Trip Profitability",
