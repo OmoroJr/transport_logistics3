@@ -81,7 +81,7 @@
   {
    "label": "Trailers & Gate Pass",
    "type": "Card Break",
-   "link_count": 3
+   "link_count": 5
   },
   {
    "label": "Trailer",
@@ -103,6 +103,20 @@
    "link_type": "DocType",
    "link_to": "Gate Pass",
    "is_query_report": 0
+  },
+  {
+   "label": "Gate Pass Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Gate Pass Register",
+   "is_query_report": 1
+  },
+  {
+   "label": "Visitors On Site",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Visitors On Site",
+   "is_query_report": 1
   },
   {
    "label": "Maintenance & Safety",
@@ -168,7 +182,35 @@
   {
    "label": "Payments & Reports",
    "type": "Card Break",
-   "link_count": 14
+   "link_count": 19
+  },
+  {
+   "label": "Trip Profitability",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Trip Profitability",
+   "is_query_report": 1
+  },
+  {
+   "label": "Delivery Performance",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Delivery Performance",
+   "is_query_report": 1
+  },
+  {
+   "label": "Maintenance Due",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Maintenance Due",
+   "is_query_report": 1
+  },
+  {
+   "label": "Transport Profit and Loss",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Transport Profit and Loss",
+   "is_query_report": 1
   },
   {
    "label": "Driver Mileage Payment",
@@ -253,6 +295,13 @@
    "link_type": "DocType",
    "link_to": "Route",
    "is_query_report": 0
+  },
+  {
+   "label": "Route Profitability",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Route Profitability",
+   "is_query_report": 1
   },
   {
    "label": "Truck Cost Dashboard",

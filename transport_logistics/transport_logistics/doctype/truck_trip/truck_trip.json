@@ -20,6 +20,7 @@
   "section_break_route",
   "origin",
   "destination",
+  "expected_delivery_datetime",
   "column_break_route",
   "start_odometer",
   "end_odometer",
@@ -33,6 +34,7 @@
   "offload_odometer",
   "offloaded_by",
   "delivery_number",
+  "delivery_delay_reason",
   "proof_of_delivery",
   "section_break_pod_auth",
   "pod_authenticated",
@@ -157,6 +159,12 @@
    "fetch_if_empty": 1
   },
   {
+   "fieldname": "expected_delivery_datetime",
+   "fieldtype": "Datetime",
+   "label": "Expected Delivery Date & Time",
+   "description": "Promised delivery time to the customer, if tracked. Used by the Delivery Performance report to classify a trip as On-Time or Late once offloaded. Leave blank if this isn't tracked for this trip \u2014 it won't be counted as either."
+  },
+  {
    "fieldname": "column_break_route",
    "fieldtype": "Column Break"
   },
@@ -238,6 +246,13 @@
    "description": "Must match the Delivery Note recorded above (the document issued to the driver when the trip started) - transcribe it from the physical document in hand at offload. A mismatch is rejected: it means the driver is not returning proof against the original delivery.",
    "read_only": 1,
    "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+  },
+  {
+   "fieldname": "delivery_delay_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for Delay",
+   "depends_on": "eval:doc.expected_delivery_datetime && doc.offload_datetime && doc.offload_datetime > doc.expected_delivery_datetime",
+   "description": "Only relevant if this trip was offloaded later than the Expected Delivery Date & Time above."
   },
   {
    "fieldname": "proof_of_delivery",
