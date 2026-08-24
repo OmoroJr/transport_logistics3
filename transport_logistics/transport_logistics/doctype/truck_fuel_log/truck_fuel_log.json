@@ -272,8 +272,7 @@
   {
    "fieldname": "section_break_approval",
    "fieldtype": "Section Break",
-   "label": "Manager Approval",
-   "depends_on": "eval:doc.extra_fuel_litres > 0"
+   "label": "Manager Approval"
   },
   {
    "fieldname": "manager_approval_status",

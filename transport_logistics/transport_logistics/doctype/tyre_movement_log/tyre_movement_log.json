@@ -175,8 +175,7 @@
   {
    "fieldname": "section_break_approval",
    "fieldtype": "Section Break",
-   "label": "Manager Approval",
-   "depends_on": "eval:[\"Fitted\",\"Removed\"].includes(doc.movement_type)"
+   "label": "Manager Approval"
   },
   {
    "fieldname": "manager_approval_status",

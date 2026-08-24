@@ -256,8 +256,7 @@
   {
    "fieldname": "section_break_approval",
    "fieldtype": "Section Break",
-   "label": "Manager Approval",
-   "depends_on": "eval:doc.parts_cost > 0"
+   "label": "Manager Approval"
   },
   {
    "fieldname": "manager_approval_status",
