@@ -12,6 +12,36 @@ frappe.ui.form.on("Fuel Dispensing", {
 		}
 	},
 
+	setup(frm) {
+		frm.set_query("truck_trip", () => ({
+			filters: { truck: frm.doc.truck || "" },
+		}));
+		frm.set_query("authority_to_load", () => ({
+			filters: {
+				truck: frm.doc.truck || "",
+				truck_trip: frm.doc.truck_trip || "",
+				docstatus: 1,
+				all_checks_passed: 1,
+			},
+		}));
+	},
+
+	truck(frm) {
+		frm.set_value("truck_trip", "");
+		frm.set_value("authority_to_load", "");
+	},
+
+	reason_for_fuelling(frm) {
+		if (frm.doc.reason_for_fuelling !== "For Trip") {
+			frm.set_value("truck_trip", "");
+			frm.set_value("authority_to_load", "");
+		}
+	},
+
+	truck_trip(frm) {
+		frm.set_value("authority_to_load", "");
+	},
+
 	tank(frm) {
 		if (!frm.doc.tank) return;
 		frappe.call({

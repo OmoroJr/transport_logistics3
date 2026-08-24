@@ -56,6 +56,9 @@ def check_stock_and_issue(doc, method=None):
 	log.fuel_station = f"Internal Bulk Tank: {tank.tank_name}"
 	log.source = "Internal Bulk Dispensing"
 	log.fuel_dispensing = doc.name
+	log.reason_for_fuelling = doc.reason_for_fuelling
+	log.truck_trip = doc.truck_trip
+	log.authority_to_load = doc.authority_to_load
 	log.insert(ignore_permissions=True)
 	log.submit()
 
