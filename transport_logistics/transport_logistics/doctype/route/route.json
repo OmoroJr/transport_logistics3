@@ -30,7 +30,7 @@
   {"fieldname": "origin", "fieldtype": "Data", "label": "Origin", "reqd": 1, "in_list_view": 1},
   {"fieldname": "destination", "fieldtype": "Data", "label": "Destination", "reqd": 1, "in_list_view": 1},
   {"fieldname": "column_break_places", "fieldtype": "Column Break"},
-  {"fieldname": "distance_km", "fieldtype": "Float", "label": "Reference Distance (Km)", "description": "For information only \u2014 driver pay for this route is the flat rate below, not distance x rate."},
+  {"fieldname": "distance_km", "fieldtype": "Float", "label": "Reference Distance (Km)", "description": "For information only \u2014 driver pay for this route is the flat rate below, not distance x rate. Use the 'Fetch Distance from Google Maps' button above to fill this in from Origin/Destination (requires Google Maps Integration configured in Transport Logistics Settings)."},
   {"fieldname": "section_break_fuel", "fieldtype": "Section Break", "label": "Fuel Guidance"},
   {"fieldname": "standard_fuel_litres", "fieldtype": "Float", "label": "Standard Fuel (Litres)", "description": "Normal/expected fuel quantity for a trip on this route. Leave blank if not tracked. When a Truck Fuel Log for a trip on this route exceeds this amount, the driver/clerk will be required to give a reason for the extra fuel \u2014 it isn't a hard block, just a leeway with accountability."},
   {"fieldname": "section_break_rate", "fieldtype": "Section Break", "label": "Driver Pay"},

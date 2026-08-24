@@ -56,6 +56,9 @@
   "gps_password",
   "section_gps_safety",
   "gps_odometer_jump_limit_km",
+  "section_google_maps",
+  "enable_google_maps",
+  "google_maps_api_key",
   "section_whatsapp",
   "enable_whatsapp",
   "whatsapp_phone_number_id",
@@ -417,6 +420,25 @@
    "label": "Reject Odometer Jump Above (Km)",
    "default": "1000",
    "description": "If a device's odometer reading jumps by more than this many Km since the last sync, it is treated as a device glitch/reset and ignored (logged to Error Log) rather than applied to the Truck. The odometer is also never allowed to move backward."
+  },
+  {
+   "fieldname": "section_google_maps",
+   "fieldtype": "Section Break",
+   "label": "Google Maps Integration"
+  },
+  {
+   "fieldname": "enable_google_maps",
+   "fieldtype": "Check",
+   "label": "Enable Google Maps Distance Lookup",
+   "description": "Lets the Route form fetch driving distance between Origin and Destination from the Google Maps Distance Matrix API. Requires a Google Cloud project with the Distance Matrix API enabled and billing set up."
+  },
+  {
+   "fieldname": "google_maps_api_key",
+   "fieldtype": "Password",
+   "label": "Google Maps API Key",
+   "depends_on": "eval:doc.enable_google_maps",
+   "mandatory_depends_on": "eval:doc.enable_google_maps",
+   "description": "Restrict this key to the Distance Matrix API in Google Cloud Console to limit exposure/cost if it ever leaks."
   },
   {
    "fieldname": "section_whatsapp",
