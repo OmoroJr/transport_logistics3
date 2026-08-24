@@ -13,6 +13,7 @@ from transport_logistics.transport_logistics.manager_approval import (
 
 class TruckFuelLog(Document):
 	def validate(self):
+		validate_source_requires_dispensing(self)
 		validate_reason_for_fuelling(self)
 		set_computed_fields(self)
 		set_extra_fuel_fields(self)
@@ -31,6 +32,32 @@ def enforce_extra_fuel_approval(doc, method=None):
 	driver/clerk's own written reason captured above."""
 	flag_pending_approval(doc, _extra_fuel_requires_approval)
 	block_submit_if_not_approved(doc, "extra fuel over the route standard")
+
+
+def validate_source_requires_dispensing(doc):
+	"""Internal Bulk Dispensing is only allowed to reach Truck Fuel Log via the
+	Fuel Dispensing doctype (Fuel Dispensing.check_stock_and_issue creates this
+	log automatically after it has already deducted the litres from the tank's
+	warehouse with a Stock Entry). A log can't otherwise say which tank the
+	fuel came from, so without this guard someone could log an 'Internal Bulk
+	Dispensing' fill-up by hand and no fuel stock would ever be depleted for
+	it — this makes that impossible."""
+	if doc.source != "Internal Bulk Dispensing":
+		return
+
+	if not doc.fuel_dispensing:
+		frappe.throw(
+			"Truck Fuel Log with Source 'Internal Bulk Dispensing' cannot be created "
+			"directly — it must come from a Fuel Dispensing record, which deducts the "
+			"litres from the fuel tank's stock. Please create a Fuel Dispensing entry "
+			"instead."
+		)
+
+	linked_truck = frappe.db.get_value("Fuel Dispensing", doc.fuel_dispensing, "truck")
+	if linked_truck and linked_truck != doc.truck:
+		frappe.throw(
+			f"Fuel Dispensing {doc.fuel_dispensing} is for truck {linked_truck}, not {doc.truck}."
+		)
 
 
 def validate_reason_for_fuelling(doc):
