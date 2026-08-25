@@ -39,6 +39,8 @@
   "interchange_receipt",
   "section_break_rev",
   "revenue",
+  "section_break_driver_allowance",
+  "driver_mileage_payment",
   "section_break_offload",
   "offload_status",
   "offload_datetime",
@@ -297,6 +299,19 @@
    "fetch_if_empty": 1,
    "read_only_depends_on": "eval:doc.sales_order",
    "description": "Auto-filled from the linked Sales Order's Grand Total. If no Sales Order is linked, enter the revenue for this trip manually."
+  },
+  {
+   "fieldname": "section_break_driver_allowance",
+   "fieldtype": "Section Break",
+   "label": "Driver Allowance"
+  },
+  {
+   "fieldname": "driver_mileage_payment",
+   "fieldtype": "Link",
+   "label": "Driver Mileage Payment",
+   "options": "Driver Mileage Payment",
+   "read_only": 1,
+   "description": "Auto-created as a draft when this trip starts (status set to Ongoing), for the Driver, using this trip's Route and the Route's Driver Rate \u2014 one trip's worth of per-destination mileage pay. Locked once set. Not created if no Route is linked to this trip (there's no per-destination rate to use in that case) \u2014 link a Driver Mileage Payment manually if one is still owed."
   },
   {
    "fieldname": "section_break_offload",

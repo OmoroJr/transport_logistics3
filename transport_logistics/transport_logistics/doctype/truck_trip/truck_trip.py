@@ -22,6 +22,8 @@ class TruckTrip(Document):
 		validate_loading_authority(self)
 		auto_create_delivery_note(self)
 		validate_delivery_note_locked(self)
+		auto_create_driver_mileage_payment(self)
+		validate_driver_mileage_payment_locked(self)
 		validate_pretrip_fuel_log_locked(self)
 		validate_pretrip_fuel(self)
 		validate_pretrip_inspection_locked(self)
@@ -217,6 +219,79 @@ def auto_create_delivery_note(doc, method=None):
 		)
 
 	doc.delivery_note = dn.name
+
+
+def auto_create_driver_mileage_payment(doc, method=None):
+	"""When a trip moves to Ongoing (the truck is loaded/dispatched and
+	departs) fires and there's no Driver Mileage Payment linked yet, create
+	one automatically for this single trip: driver, truck, and a one-row
+	Routes table (this trip's Route, 1 trip, at the Route's Driver Rate) —
+	the same per-destination rate get_route_trip_counts() uses when someone
+	fetches trips manually for a period. From Date / To Date are both set
+	to the trip date, since this payment covers exactly one trip.
+
+	Left as a Draft (not submitted) so Transport Manager can review, add
+	Other Allowance / Bonus, and choose Payment Method / initiate payment —
+	auto-creation only removes the data-entry step, not the review step.
+
+	Requires both a Driver and a Route: with no Route there's no
+	per-destination rate to compute, and the Routes child table is
+	mandatory on Driver Mileage Payment, so there'd be nothing valid to
+	save. In that case no payment is auto-created — link one manually if
+	the driver is still owed something for this trip.
+
+	Fires only on the Planned -> Ongoing transition (same trigger point
+	auto_create_delivery_note() uses above), so re-editing an in-progress
+	trip doesn't spawn a second payment; validate_driver_mileage_payment_locked()
+	below then freezes the link so it can't be swapped out afterward."""
+	if doc.status != "Ongoing" or doc.driver_mileage_payment:
+		return
+	if not doc.driver or not doc.route:
+		return
+
+	if not doc.is_new():
+		previous_status = frappe.db.get_value("Truck Trip", doc.name, "status")
+		if previous_status == "Ongoing":
+			return
+
+	rate = frappe.db.get_value("Route", doc.route, "driver_rate") or 0
+
+	try:
+		dmp = frappe.new_doc("Driver Mileage Payment")
+		dmp.driver = doc.driver
+		dmp.truck = doc.truck
+		dmp.company = doc.company
+		dmp.from_date = doc.trip_date
+		dmp.to_date = doc.trip_date
+		dmp.append(
+			"routes",
+			{
+				"route": doc.route,
+				"number_of_trips": 1,
+				"rate": rate,
+				"amount": flt(rate),
+			},
+		)
+		dmp.remarks = f"Auto-created for Truck Trip {doc.name}"
+		dmp.insert(ignore_permissions=True)
+	except Exception as e:
+		frappe.throw(
+			f"Could not automatically create a Driver Mileage Payment for this trip: {e}"
+		)
+
+	doc.driver_mileage_payment = dmp.name
+
+
+def validate_driver_mileage_payment_locked(doc, method=None):
+	if doc.is_new():
+		return
+
+	previous = frappe.db.get_value("Truck Trip", doc.name, "driver_mileage_payment")
+	if previous and doc.driver_mileage_payment != previous:
+		frappe.throw(
+			f"Driver Mileage Payment cannot be changed once set (was {previous}). It represents "
+			"the allowance auto-created for this specific trip when it started."
+		)
 
 
 def validate_pretrip_fuel(doc, method=None):

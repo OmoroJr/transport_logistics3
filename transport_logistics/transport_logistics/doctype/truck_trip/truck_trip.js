@@ -187,6 +187,11 @@ frappe.ui.form.on("Truck Trip", {
 			}).addClass("btn-primary");
 
 			frm.dashboard.add_indicator(__("Empty — En Route to Depot {0}", [frm.doc.destination || ""]), "orange");
+			if (frm.doc.driver_mileage_payment) {
+				frm.dashboard.add_indicator(__("Driver Allowance: {0}", [frm.doc.driver_mileage_payment]), "blue");
+			} else if (frm.doc.driver && !frm.doc.route) {
+				frm.dashboard.add_indicator(__("No Driver Allowance — trip has no Route"), "grey");
+			}
 		} else if (frm.doc.status === "Ongoing" && frm.doc.offload_status === "Not Offloaded") {
 			frm.add_custom_button(__("Offload at Client"), () => {
 				if (!frm.doc.delivery_note) {
@@ -268,6 +273,11 @@ frappe.ui.form.on("Truck Trip", {
 			}).addClass("btn-primary");
 
 			frm.dashboard.add_indicator(__("Loaded — En Route to {0}", [frm.doc.destination || "client"]), "orange");
+			if (frm.doc.driver_mileage_payment) {
+				frm.dashboard.add_indicator(__("Driver Allowance: {0}", [frm.doc.driver_mileage_payment]), "blue");
+			} else if (frm.doc.driver && !frm.doc.route) {
+				frm.dashboard.add_indicator(__("No Driver Allowance — trip has no Route"), "grey");
+			}
 		} else if (frm.doc.offload_status === "Offloaded" && frm.doc.trip_type === "Empty Return to Depot") {
 			frm.dashboard.add_indicator(
 				__("Returned — Interchange # {0}", [frm.doc.interchange_no || "—"]),
