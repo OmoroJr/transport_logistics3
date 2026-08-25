@@ -11,6 +11,9 @@ const KPI_ICONS = {
 	maintenance: "fa-solid fa-screwdriver-wrench",
 	tyre: "fa-solid fa-dharmachakra",
 	other: "fa-solid fa-file-invoice-dollar",
+	driver_allowance: "fa-solid fa-hand-holding-dollar",
+	empty_return: "fa-solid fa-truck-ramp-box",
+	pending_returns: "fa-solid fa-triangle-exclamation",
 	depreciation: "fa-solid fa-building",
 	total: "fa-solid fa-coins",
 };
@@ -26,6 +29,9 @@ const KPI_COMPONENTS = {
 	maintenance: { component: "maintenance", list_doctype: "Truck Maintenance Log" },
 	tyre: { component: "tyre", list_doctype: "Tyre Movement Log" },
 	other: { component: "other", list_doctype: "Truck Expense" },
+	driver_allowance: { component: "driver_allowance", list_doctype: "Driver Mileage Payment" },
+	empty_return: { component: "empty_return", list_doctype: "Truck Trip" },
+	pending_returns: { component: "pending_returns", list_doctype: "Truck Trip" },
 	depreciation: { component: "depreciation", list_doctype: null },
 	total: { component: "total", list_doctype: null },
 };
@@ -141,6 +147,9 @@ frappe.pages["truck-cost-dashboard"].on_page_load = function (wrapper) {
 			{ key: "maintenance", label: __("MAINTENANCE COST"), value: fmt_money(data.maintenance_cost), icon: "maintenance" },
 			{ key: "tyre", label: __("TYRE COST"), value: fmt_money(data.tyre_cost), icon: "tyre" },
 			{ key: "other", label: __("OTHER EXPENSES"), value: fmt_money(data.other_expense_cost), icon: "other" },
+			{ key: "driver_allowance", label: __("DRIVER MILEAGE / ALLOWANCE"), value: fmt_money(data.driver_allowance_cost), icon: "driver_allowance" },
+			{ key: "empty_return", label: __("EMPTY RETURN COST (EST.)"), value: `${fmt_money(data.empty_return_cost_estimate)} (${fmt_num(data.empty_return_distance_km)} km)`, icon: "empty_return" },
+			{ key: "pending_returns", label: __("PENDING CONTAINER RETURNS"), value: fmt_num(data.pending_empty_returns), icon: "pending_returns" },
 			{ key: "depreciation", label: __("DEPRECIATION"), value: fmt_money(data.depreciation_cost), icon: "depreciation" },
 			{ key: "total", label: __("TOTAL COST"), value: fmt_money(data.total_cost), icon: "total", highlight: true },
 		];

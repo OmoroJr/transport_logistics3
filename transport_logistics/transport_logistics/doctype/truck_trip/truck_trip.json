@@ -8,6 +8,7 @@
   "truck",
   "driver",
   "route",
+  "trip_type",
   "trip_date",
   "status",
   "column_break_1",
@@ -25,6 +26,17 @@
   "start_odometer",
   "end_odometer",
   "distance_km",
+  "section_break_container",
+  "shipment",
+  "container_no",
+  "column_break_container",
+  "planned_depot",
+  "depot",
+  "depot_changed",
+  "depot_change_reason",
+  "interchange_no",
+  "interchange_date",
+  "interchange_receipt",
   "section_break_rev",
   "revenue",
   "section_break_offload",
@@ -75,6 +87,17 @@
    "description": "Optional: link a standard Route to auto-fill Origin/Destination and drive per-destination driver pay."
   },
   {
+   "fieldname": "trip_type",
+   "fieldtype": "Select",
+   "label": "Trip Type",
+   "options": "Loaded Haul\nEmpty Return to Depot",
+   "default": "Loaded Haul",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Loaded Haul: normal revenue trip with a customer delivery. Empty Return to Depot: repositioning an empty container back to the depot/CFS \u2014 no Delivery Note or Authority to Load is required, but an Interchange Number is required once returned. Revenue is still optional on either type (some interchange/repositioning runs are paid)."
+  },
+  {
    "fieldname": "trip_date",
    "fieldtype": "Date",
    "label": "Trip Date",
@@ -121,8 +144,8 @@
    "fieldtype": "Link",
    "label": "Delivery Note",
    "options": "Delivery Note",
-   "description": "Generated automatically from the linked Sales Order when this trip starts (status set to Ongoing), the same way a normal Sales flow produces a Delivery Note. Leave blank to have it auto-created, or link an existing submitted Delivery Note yourself (e.g. for a partial shipment). Locked once set, and the Delivery Number captured at offload must match it.",
-   "mandatory_depends_on": "eval:doc.status==\"Ongoing\" || doc.status==\"Completed\""
+   "description": "Generated automatically from the linked Sales Order when this trip starts (status set to Ongoing), the same way a normal Sales flow produces a Delivery Note. Leave blank to have it auto-created, or link an existing submitted Delivery Note yourself (e.g. for a partial shipment). Locked once set, and the Delivery Number captured at offload must match it. Not applicable to Empty Return to Depot trips.",
+   "mandatory_depends_on": "eval:(doc.status==\"Ongoing\" || doc.status==\"Completed\") && doc.trip_type!=\"Empty Return to Depot\""
   },
   {
    "fieldname": "pre_trip_fuel_log",
@@ -186,6 +209,82 @@
    "in_list_view": 1
   },
   {
+   "fieldname": "section_break_container",
+   "fieldtype": "Section Break",
+   "label": "Empty Container Return",
+   "depends_on": "eval:doc.trip_type==\"Empty Return to Depot\""
+  },
+  {
+   "fieldname": "shipment",
+   "fieldtype": "Link",
+   "label": "Shipment",
+   "options": "Shipment",
+   "description": "Optional: link the Shipment this empty container belongs to, to auto-fill Container No."
+  },
+  {
+   "fieldname": "container_no",
+   "fieldtype": "Data",
+   "label": "Container No",
+   "fetch_from": "shipment.container_no",
+   "fetch_if_empty": 1
+  },
+  {
+   "fieldname": "column_break_container",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "planned_depot",
+   "fieldtype": "Data",
+   "label": "Planned Depot / Yard",
+   "read_only": 1,
+   "description": "Depot, CFS or yard this empty container was originally routed to (mirrors Destination). Set automatically once this trip is saved as an Empty Return to Depot trip, and locked from then on \u2014 it's the baseline the actual return depot is compared against."
+  },
+  {
+   "fieldname": "depot",
+   "fieldtype": "Data",
+   "label": "Actual Depot / Yard",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.trip_type==\"Empty Return to Depot\" && doc.offload_status==\"Offloaded\"",
+   "description": "Depot, CFS or yard the empty container was actually returned to. Can differ from Planned Depot / Yard (e.g. driver redirected to a different depot) \u2014 if it does, a reason is required."
+  },
+  {
+   "fieldname": "depot_changed",
+   "fieldtype": "Check",
+   "label": "Returned to a Different Depot",
+   "default": "0",
+   "read_only": 1,
+   "description": "Set automatically when Actual Depot / Yard doesn't match Planned Depot / Yard."
+  },
+  {
+   "fieldname": "depot_change_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for Depot Change",
+   "depends_on": "eval:doc.depot_changed",
+   "mandatory_depends_on": "eval:doc.depot_changed && doc.offload_status==\"Offloaded\"",
+   "description": "Required when the container was returned to a different depot than planned \u2014 e.g. the original depot was full, closed, or redirected by the shipping line/CFS."
+  },
+  {
+   "fieldname": "interchange_no",
+   "fieldtype": "Data",
+   "label": "Interchange Number",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.trip_type==\"Empty Return to Depot\" && doc.offload_status==\"Offloaded\"",
+   "description": "Container interchange receipt number issued by the depot/CFS confirming the empty container was handed back in acceptable condition. Required once this trip is marked Returned."
+  },
+  {
+   "fieldname": "interchange_date",
+   "fieldtype": "Date",
+   "label": "Interchange Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "interchange_receipt",
+   "fieldtype": "Attach",
+   "label": "Interchange Receipt",
+   "read_only": 1,
+   "description": "Optional: scanned/photographed copy of the interchange receipt issued by the depot/CFS confirming the empty container was accepted back."
+  },
+  {
    "fieldname": "section_break_rev",
    "fieldtype": "Section Break",
    "label": "Revenue (Optional)"
@@ -243,9 +342,9 @@
    "fieldname": "delivery_number",
    "fieldtype": "Data",
    "label": "Delivery Number",
-   "description": "Must match the Delivery Note recorded above (the document issued to the driver when the trip started) - transcribe it from the physical document in hand at offload. A mismatch is rejected: it means the driver is not returning proof against the original delivery.",
+   "description": "Must match the Delivery Note recorded above (the document issued to the driver when the trip started) - transcribe it from the physical document in hand at offload. A mismatch is rejected: it means the driver is not returning proof against the original delivery. Not applicable to Empty Return to Depot trips.",
    "read_only": 1,
-   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\" && doc.trip_type!=\"Empty Return to Depot\""
   },
   {
    "fieldname": "delivery_delay_reason",
@@ -258,9 +357,9 @@
    "fieldname": "proof_of_delivery",
    "fieldtype": "Attach",
    "label": "Proof of Delivery",
-   "description": "Signed delivery note / POD document confirming the client received the load. Required before a trip can be marked Offloaded.",
+   "description": "Signed delivery note / POD document confirming the client received the load. Required before a Loaded Haul trip can be marked Offloaded. Not applicable to Empty Return to Depot trips.",
    "read_only": 1,
-   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\""
+   "mandatory_depends_on": "eval:doc.offload_status==\"Offloaded\" && doc.trip_type!=\"Empty Return to Depot\""
   },
   {
    "fieldname": "section_break_pod_auth",

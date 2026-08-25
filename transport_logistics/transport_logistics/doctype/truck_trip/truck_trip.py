@@ -26,6 +26,9 @@ class TruckTrip(Document):
 		validate_pretrip_fuel(self)
 		validate_pretrip_inspection_locked(self)
 		validate_pretrip_inspection(self)
+		set_planned_depot(self)
+		validate_planned_depot_locked(self)
+		flag_depot_change(self)
 		validate_offload_data(self)
 		set_revenue_from_sales_order(self)
 		notify_driver_trip_started(self)
@@ -123,7 +126,14 @@ def validate_loading_authority(doc, method=None):
 	current. Only skipped if this trip was already Ongoing before this save
 	(a subsequent edit, not the transition itself) — a brand new Truck Trip
 	saved directly as Ongoing is NOT exempt, since no Authority to Load can
-	possibly reference a trip that didn't exist yet when it was issued."""
+	possibly reference a trip that didn't exist yet when it was issued.
+
+	Not applicable to Empty Return to Depot trips: there's no cargo being
+	loaded on this leg, so there's nothing for an Authority to Load to
+	authorize."""
+	if doc.trip_type == "Empty Return to Depot":
+		return
+
 	if doc.status != "Ongoing":
 		return
 
@@ -176,7 +186,13 @@ def auto_create_delivery_note(doc, method=None):
 	If Delivery Note creation/submission fails — e.g. insufficient stock,
 	or the Sales Order is already fully delivered — that failure correctly
 	blocks the trip from starting, since the truck can't credibly depart
-	with goods that were never actually issued against real stock."""
+	with goods that were never actually issued against real stock.
+
+	Not applicable to Empty Return to Depot trips (no Sales Order flow on
+	this leg — the sales_order guard below would already skip it, but this
+	makes the exclusion explicit)."""
+	if doc.trip_type == "Empty Return to Depot":
+		return
 	if doc.status != "Ongoing" or doc.delivery_note or not doc.sales_order:
 		return
 
@@ -413,12 +429,64 @@ def validate_delivery_note_locked(doc, method=None):
 		)
 
 
+def set_planned_depot(doc, method=None):
+	"""Planned Depot / Yard is the baseline an Empty Return to Depot trip was
+	dispatched against — it mirrors Destination at the point this trip first
+	becomes an Empty Return to Depot trip. Only filled in if still blank;
+	validate_planned_depot_locked() below then freezes it, so later edits to
+	Destination (or a redirect at return time via Actual Depot / Yard) don't
+	silently move the baseline out from under the comparison in
+	flag_depot_change()."""
+	if doc.trip_type != "Empty Return to Depot":
+		return
+	if not doc.planned_depot:
+		doc.planned_depot = doc.destination
+
+
+def validate_planned_depot_locked(doc, method=None):
+	if doc.is_new():
+		return
+
+	previous = frappe.db.get_value("Truck Trip", doc.name, "planned_depot")
+	if previous and doc.planned_depot != previous:
+		frappe.throw(
+			f"Planned Depot / Yard cannot be changed once set (was {previous}). It represents "
+			"where this container was originally routed to, and is what Actual Depot / Yard is "
+			"compared against to detect a depot change."
+		)
+
+
+def flag_depot_change(doc, method=None):
+	"""Detects whether the empty container was actually returned to a
+	different depot/CFS than the one it was planned for (Planned Depot /
+	Yard). This is a normal occurrence — the original depot can be full,
+	closed, or the shipping line/CFS can redirect it — but it needs to be
+	visible and explained (see depot_change_reason), not just silently
+	recorded in a free-text Depot field."""
+	if doc.trip_type != "Empty Return to Depot":
+		doc.depot_changed = 0
+		return
+
+	if not doc.planned_depot or not doc.depot:
+		doc.depot_changed = 0
+		return
+
+	doc.depot_changed = 1 if doc.depot.strip().lower() != doc.planned_depot.strip().lower() else 0
+	if not doc.depot_changed:
+		doc.depot_change_reason = None
+
+
 def validate_offload_data(doc, method=None):
 	"""A trip can't be marked Offloaded unless every piece of proof-of-
 	delivery data is actually captured — this is the field-level backstop
 	behind the offload_truck() flow below, so the requirement holds even if
 	a Truck Trip is offloaded via the API or a data import rather than the
-	'Offload at Client' dialog."""
+	'Offload at Client' dialog.
+
+	Empty Return to Depot trips have no customer delivery on this leg, so
+	they're checked against the Interchange Number / Depot instead of
+	Delivery Note / Delivery Number / Proof of Delivery — see
+	return_empty_container() below, the equivalent flow for this trip type."""
 	if doc.offload_status != "Offloaded":
 		return
 
@@ -429,22 +497,37 @@ def validate_offload_data(doc, method=None):
 		missing.append("Odometer At Offload")
 	if not doc.offloaded_by:
 		missing.append("Offload Confirmed By")
-	if not doc.delivery_note:
-		missing.append("Delivery Note")
-	if not doc.delivery_number:
-		missing.append("Delivery Number")
-	if not doc.proof_of_delivery:
-		missing.append("Proof of Delivery (attached file)")
+
+	if doc.trip_type == "Empty Return to Depot":
+		if not doc.depot:
+			missing.append("Actual Depot / Yard")
+		if not doc.interchange_no:
+			missing.append("Interchange Number")
+		if doc.depot_changed and not doc.depot_change_reason:
+			missing.append("Reason for Depot Change")
+	else:
+		if not doc.delivery_note:
+			missing.append("Delivery Note")
+		if not doc.delivery_number:
+			missing.append("Delivery Number")
+		if not doc.proof_of_delivery:
+			missing.append("Proof of Delivery (attached file)")
 
 	if missing:
 		frappe.throw(
 			"Cannot mark this trip as Offloaded — the following are required: "
 			+ ", ".join(missing)
-			+ ". A truck can only be confirmed offloaded at the client's premises once "
-			"the Delivery Number and signed Proof of Delivery are captured."
+			+ (
+				". An Empty Return to Depot trip can only be confirmed returned once the "
+				"Depot / Yard and Interchange Number are captured."
+				if doc.trip_type == "Empty Return to Depot"
+				else ". A truck can only be confirmed offloaded at the client's premises once "
+				"the Delivery Number and signed Proof of Delivery are captured."
+			)
 		)
 
-	validate_delivery_number_matches_delivery_note(doc)
+	if doc.trip_type != "Empty Return to Depot":
+		validate_delivery_number_matches_delivery_note(doc)
 
 
 def validate_delivery_number_matches_delivery_note(doc, method=None):
@@ -586,7 +669,10 @@ def offload_truck(
 	and validate_delivery_number_matches_delivery_note() above enforce this
 	again at save time regardless of how this method is called. This only
 	captures the POD; it does NOT authenticate it — see authenticate_pod()
-	below, which is a deliberately separate, restricted action."""
+	below, which is a deliberately separate, restricted action.
+
+	Loaded Haul trips only — see return_empty_container() below for the
+	Empty Return to Depot equivalent."""
 	if not offload_odometer:
 		frappe.throw("Odometer Reading at Offload is required.")
 	if not offloaded_by:
@@ -602,6 +688,12 @@ def offload_truck(
 		)
 
 	doc = frappe.get_doc("Truck Trip", trip_name)
+
+	if doc.trip_type == "Empty Return to Depot":
+		frappe.throw(
+			"This trip is Trip Type 'Empty Return to Depot' — use 'Return Empty Container to "
+			"Depot' instead of 'Offload at Client'."
+		)
 
 	if doc.offload_status == "Offloaded":
 		frappe.throw("This trip has already been offloaded.")
@@ -626,18 +718,102 @@ def offload_truck(
 
 	doc.save(ignore_permissions=True)
 
-	_link_proof_of_delivery_attachment(doc, proof_of_delivery)
+	_link_attachment(doc, proof_of_delivery, "proof_of_delivery")
 
 	return doc.name
 
 
-def _link_proof_of_delivery_attachment(doc, file_url):
-	"""The Proof of Delivery file is uploaded from a stand-alone Dialog
-	(before the Truck Trip document context is available to the uploader),
-	so the resulting File record isn't automatically linked to this Truck
-	Trip the way an in-form Attach upload would be. Link it explicitly so
-	it shows up correctly in the document's Attachments list rather than
-	sitting orphaned."""
+@frappe.whitelist()
+def return_empty_container(
+	trip_name,
+	offload_odometer=None,
+	offloaded_by=None,
+	depot=None,
+	depot_change_reason=None,
+	interchange_no=None,
+	interchange_date=None,
+	interchange_receipt=None,
+):
+	"""Companion to offload_truck() above, for an 'Empty Return to Depot'
+	leg: marks the trip Completed once the empty container has physically
+	been handed back at the depot/CFS. There's no customer delivery on
+	this leg, so it's evidenced by an Actual Depot / Yard and Interchange
+	Number (the receipt the depot/CFS issues confirming the container was
+	accepted back in good condition) rather than a Delivery Note + POD.
+
+	'depot' here is where the container was ACTUALLY returned — it can
+	differ from Planned Depot / Yard (set automatically from Destination
+	when the trip was created; see set_planned_depot()) if the driver was
+	redirected. When it does differ, depot_change_reason is required —
+	flag_depot_change() and validate_offload_data() above enforce this
+	again at save time regardless of how this method is called.
+
+	interchange_receipt is an optional scanned/photographed copy of the
+	interchange receipt, attached the same way Proof of Delivery is on
+	offload_truck() below."""
+	if not offload_odometer:
+		frappe.throw("Odometer Reading at Return is required.")
+	if not offloaded_by:
+		frappe.throw("Confirmed By (the person who witnessed/confirmed the return) is required.")
+	if not depot:
+		frappe.throw("Actual Depot / Yard is required.")
+	if not interchange_no:
+		frappe.throw(
+			"Interchange Number is required — transcribe it from the interchange receipt "
+			"issued at the depot/CFS confirming the empty container was accepted back."
+		)
+
+	doc = frappe.get_doc("Truck Trip", trip_name)
+
+	if doc.trip_type != "Empty Return to Depot":
+		frappe.throw(
+			"This action is only for trips of Trip Type 'Empty Return to Depot' — use "
+			"'Offload at Client' instead."
+		)
+	if doc.offload_status == "Offloaded":
+		frappe.throw("This trip has already been marked as returned.")
+
+	if not doc.planned_depot:
+		doc.planned_depot = doc.destination
+
+	depot = depot.strip()
+	depot_changed = bool(doc.planned_depot) and depot.lower() != doc.planned_depot.strip().lower()
+	if depot_changed and not depot_change_reason:
+		frappe.throw(
+			f"Actual Depot / Yard ({depot}) is different from the Planned Depot / Yard "
+			f"({doc.planned_depot}) — a Reason for Depot Change is required."
+		)
+
+	doc.offload_status = "Offloaded"
+	doc.offload_datetime = now_datetime()
+	doc.offload_odometer = flt(offload_odometer)
+	if not doc.end_odometer:
+		doc.end_odometer = flt(offload_odometer)
+	doc.offloaded_by = offloaded_by
+	doc.depot = depot
+	doc.depot_changed = 1 if depot_changed else 0
+	doc.depot_change_reason = depot_change_reason if depot_changed else None
+	doc.interchange_no = interchange_no.strip()
+	if interchange_date:
+		doc.interchange_date = getdate(interchange_date)
+	doc.interchange_receipt = interchange_receipt
+	doc.status = "Completed"
+
+	doc.save(ignore_permissions=True)
+
+	if interchange_receipt:
+		_link_attachment(doc, interchange_receipt, "interchange_receipt")
+
+	return doc.name
+
+
+def _link_attachment(doc, file_url, fieldname):
+	"""Files uploaded from a stand-alone Dialog (before the Truck Trip
+	document context is available to the uploader — e.g. Proof of Delivery
+	on offload_truck(), Interchange Receipt on return_empty_container())
+	aren't automatically linked to this Truck Trip the way an in-form
+	Attach upload would be. Link explicitly so they show up correctly in
+	the document's Attachments list rather than sitting orphaned."""
 	file_name = frappe.db.get_value("File", {"file_url": file_url}, "name")
 	if file_name:
 		frappe.db.set_value(
@@ -646,7 +822,7 @@ def _link_proof_of_delivery_attachment(doc, file_url):
 			{
 				"attached_to_doctype": "Truck Trip",
 				"attached_to_name": doc.name,
-				"attached_to_field": "proof_of_delivery",
+				"attached_to_field": fieldname,
 			},
 		)
 

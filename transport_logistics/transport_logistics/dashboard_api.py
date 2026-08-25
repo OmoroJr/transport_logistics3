@@ -20,6 +20,9 @@ from transport_logistics.transport_logistics.report.truck_cost_analysis.truck_co
 	get_maintenance_cost,
 	get_accident_cost,
 	get_other_expenses,
+	get_driver_allowance_cost,
+	get_empty_return_distance,
+	get_pending_empty_returns,
 	get_revenue,
 	get_depreciation,
 )
@@ -30,6 +33,7 @@ BREAKDOWN_COLORS = {
 	"Tyres": "#5DADE2",
 	"Depreciation": "#85929E",
 	"Other Expenses": "#F1C40F",
+	"Driver Allowance": "#16A085",
 	"Accidents": "#E67E22",
 }
 
@@ -50,13 +54,16 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 
 	total_cost = (
 		totals["fuel_cost"] + totals["tyre_cost"] + totals["maintenance_cost"]
-		+ totals["accident_cost"] + totals["other_expense_cost"] + totals["depreciation_cost"]
+		+ totals["accident_cost"] + totals["other_expense_cost"] + totals["driver_allowance_cost"]
+		+ totals["depreciation_cost"]
 	)
 	avg_efficiency = (totals["distance_km"] / totals["fuel_qty"]) if totals["fuel_qty"] else 0
 	cost_per_km = (total_cost / totals["distance_km"]) if totals["distance_km"] else 0
 	cost_per_trip = (total_cost / totals["trip_count"]) if totals["trip_count"] else 0
 	profit_loss = totals["revenue"] - total_cost
 	profit_per_km = (profit_loss / totals["distance_km"]) if totals["distance_km"] else 0
+	empty_return_cost_estimate = totals["empty_return_distance_km"] * cost_per_km
+	pending_empty_returns = sum(get_pending_empty_returns(t["name"]) for t in trucks)
 
 	breakdown = _build_breakdown(totals, total_cost)
 	trend = _build_trend(trucks, to_date)
@@ -70,6 +77,7 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 		"maintenance_cost": totals["maintenance_cost"],
 		"accident_cost": totals["accident_cost"],
 		"other_expense_cost": totals["other_expense_cost"],
+		"driver_allowance_cost": totals["driver_allowance_cost"],
 		"depreciation_cost": totals["depreciation_cost"],
 		"total_cost": total_cost,
 		"avg_efficiency": avg_efficiency,
@@ -78,6 +86,9 @@ def get_truck_cost_dashboard(truck=None, from_date=None, to_date=None, company=N
 		"revenue": totals["revenue"],
 		"profit_loss": profit_loss,
 		"profit_per_km": profit_per_km,
+		"empty_return_distance_km": totals["empty_return_distance_km"],
+		"empty_return_cost_estimate": empty_return_cost_estimate,
+		"pending_empty_returns": pending_empty_returns,
 		"breakdown": breakdown,
 		"trend": trend,
 		"truck_count": len(trucks),
@@ -127,6 +138,7 @@ def _zero_totals():
 	return {
 		"distance_km": 0.0, "fuel_qty": 0.0, "fuel_cost": 0.0, "tyre_cost": 0.0,
 		"maintenance_cost": 0.0, "accident_cost": 0.0, "other_expense_cost": 0.0,
+		"driver_allowance_cost": 0.0, "empty_return_distance_km": 0.0,
 		"depreciation_cost": 0.0, "revenue": 0.0, "trip_count": 0,
 	}
 
@@ -157,6 +169,8 @@ def _accumulate(totals, truck_row, from_date, to_date, period_days):
 	totals["maintenance_cost"] += get_maintenance_cost(name, from_date, to_date)
 	totals["accident_cost"] += get_accident_cost(name, from_date, to_date)
 	totals["other_expense_cost"] += get_other_expenses(name, from_date, to_date)
+	totals["driver_allowance_cost"] += get_driver_allowance_cost(name, from_date, to_date)
+	totals["empty_return_distance_km"] += get_empty_return_distance(name, from_date, to_date)
 	totals["revenue"] += get_revenue(name, from_date, to_date)
 	totals["depreciation_cost"] += get_depreciation(frappe._dict(truck_row), period_days)
 
@@ -170,6 +184,7 @@ def _build_breakdown(totals, total_cost):
 		("Tyres", totals["tyre_cost"]),
 		("Depreciation", totals["depreciation_cost"]),
 		("Other Expenses", totals["other_expense_cost"]),
+		("Driver Allowance", totals["driver_allowance_cost"]),
 		("Accidents", totals["accident_cost"]),
 	]
 	breakdown = []
@@ -210,6 +225,7 @@ def _build_trend(trucks, to_date):
 				+ get_maintenance_cost(name, month_start, month_end)
 				+ get_accident_cost(name, month_start, month_end)
 				+ get_other_expenses(name, month_start, month_end)
+				+ get_driver_allowance_cost(name, month_start, month_end)
 				+ get_depreciation(frappe._dict(t), period_days)
 			)
 			month_total_cost += cost
@@ -344,6 +360,83 @@ def _other_expense_details(truck_names, trucks, from_date, to_date):
 	}
 
 
+def _empty_return_details(truck_names, trucks, from_date, to_date):
+	rows = frappe.db.sql(
+		f"""
+		select truck, name, trip_date, distance_km, revenue, planned_depot, depot,
+			depot_changed, interchange_no, status
+		from `tabTruck Trip`
+		where truck in ({_in_clause(truck_names)}) and trip_type = 'Empty Return to Depot'
+		and status = 'Completed' and trip_date between %s and %s
+		order by trip_date desc
+		""",
+		(*truck_names, from_date, to_date),
+		as_dict=True,
+	)
+	return {
+		"columns": [
+			"Truck", "Trip", "Date", "Distance (Km)", "Revenue", "Planned Depot",
+			"Actual Depot", "Depot Changed", "Interchange #",
+		],
+		"rows": [
+			[r.truck, r.name, str(r.trip_date), flt(r.distance_km, 1), flt(r.revenue, 2),
+			 r.planned_depot or "", r.depot or "", "Yes" if r.depot_changed else "No",
+			 r.interchange_no or ""]
+			for r in rows
+		],
+		"total_label": "Empty Return Distance / Estimated Cost",
+	}
+
+
+def _pending_returns_details(truck_names, trucks, from_date, to_date):
+	"""Not date-filtered — this mirrors get_pending_empty_returns() and shows
+	the current backlog of empty containers not yet handed back at the
+	depot, regardless of the report's selected period."""
+	rows = frappe.db.sql(
+		f"""
+		select truck, name, trip_date, status, destination, depot
+		from `tabTruck Trip`
+		where truck in ({_in_clause(truck_names)}) and trip_type = 'Empty Return to Depot'
+		and status in ('Planned', 'Ongoing')
+		order by trip_date asc
+		""",
+		truck_names,
+		as_dict=True,
+	)
+	return {
+		"columns": ["Truck", "Trip", "Date", "Status", "Destination / Depot"],
+		"rows": [
+			[r.truck, r.name, str(r.trip_date), r.status, r.depot or r.destination or ""]
+			for r in rows
+		],
+		"total_label": "Pending Empty Returns",
+	}
+
+
+def _driver_allowance_details(truck_names, trucks, from_date, to_date):
+	rows = frappe.db.sql(
+		f"""
+		select truck, driver, from_date, to_date, payment_method,
+		       computed_amount, other_allowance, total_amount
+		from `tabDriver Mileage Payment`
+		where docstatus = 1 and truck in ({_in_clause(truck_names)})
+		and from_date <= %s and to_date >= %s
+		order by to_date desc
+		""",
+		(*truck_names, to_date, from_date),
+		as_dict=True,
+	)
+	return {
+		"columns": ["Truck", "Driver", "From", "To", "Method", "Mileage Pay", "Other Allowance", "Total"],
+		"rows": [
+			[r.truck, r.driver, str(r.from_date), str(r.to_date), r.payment_method,
+			 flt(r.computed_amount, 2), flt(r.other_allowance, 2), flt(r.total_amount, 2)]
+			for r in rows
+		],
+		"total_label": "Driver Allowance",
+	}
+
+
 def _accident_details(truck_names, trucks, from_date, to_date):
 	rows = frappe.db.sql(
 		f"""
@@ -415,7 +508,8 @@ def _total_cost_details(truck_names, trucks, from_date, to_date):
 		_accumulate(totals, t, from_date, to_date, period_days)
 	total_cost = (
 		totals["fuel_cost"] + totals["tyre_cost"] + totals["maintenance_cost"]
-		+ totals["accident_cost"] + totals["other_expense_cost"] + totals["depreciation_cost"]
+		+ totals["accident_cost"] + totals["other_expense_cost"] + totals["driver_allowance_cost"]
+		+ totals["depreciation_cost"]
 	)
 	breakdown = _build_breakdown(totals, total_cost)
 	return {
@@ -430,6 +524,9 @@ _COMPONENT_HANDLERS = {
 	"maintenance": _maintenance_details,
 	"tyre": _tyre_details,
 	"other": _other_expense_details,
+	"driver_allowance": _driver_allowance_details,
+	"empty_return": _empty_return_details,
+	"pending_returns": _pending_returns_details,
 	"accident": _accident_details,
 	"depreciation": _depreciation_details,
 	"distance": _distance_details,
