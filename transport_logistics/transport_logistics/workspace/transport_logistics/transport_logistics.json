@@ -427,7 +427,7 @@
    "link_to": "Workshop Job Card",
    "doc_view": "List",
    "color": "Orange",
-   "stats_filter": "{}"
+   "stats_filter": "{\"status\": [\"not in\", [\"Completed\", \"Cancelled\"]]}"
   },
   {
    "label": "Gate Pass",
