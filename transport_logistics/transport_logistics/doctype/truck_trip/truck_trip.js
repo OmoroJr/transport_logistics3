@@ -140,8 +140,9 @@ frappe.ui.form.on("Truck Trip", {
 							fieldname: "interchange_receipt",
 							label: __("Interchange Receipt"),
 							description: __(
-								"Optional: photo or scan of the interchange receipt issued at the depot/CFS."
+								"Photo or scan of the interchange receipt issued at the depot/CFS."
 							),
+							reqd: 1,
 						},
 					],
 					primary_action_label: __("Confirm Return"),
@@ -245,6 +246,26 @@ frappe.ui.form.on("Truck Trip", {
 							),
 							reqd: 1,
 						},
+						{
+							fieldtype: "Attach",
+							fieldname: "guarantee_form",
+							label: __("Guarantee Form"),
+							description: __(
+								"Photo or scan of the container guarantee form. Required because this trip has Container No {0}.",
+								[frm.doc.container_no]
+							),
+							reqd: frm.doc.container_no ? 1 : 0,
+							depends_on: () => !!frm.doc.container_no,
+						},
+						{
+							fieldtype: "Small Text",
+							fieldname: "guarantee_form_details",
+							label: __("Guarantee Form Details"),
+							description: __(
+								"Optional: guarantor, amount, validity, container condition, or other details from the guarantee form."
+							),
+							depends_on: () => !!frm.doc.container_no,
+						},
 					],
 					primary_action_label: __("Confirm Offload"),
 					primary_action(values) {
@@ -256,6 +277,8 @@ frappe.ui.form.on("Truck Trip", {
 								offloaded_by: values.offloaded_by,
 								delivery_number: values.delivery_number,
 								proof_of_delivery: values.proof_of_delivery,
+								guarantee_form: values.guarantee_form,
+								guarantee_form_details: values.guarantee_form_details,
 							},
 							freeze: true,
 							callback() {

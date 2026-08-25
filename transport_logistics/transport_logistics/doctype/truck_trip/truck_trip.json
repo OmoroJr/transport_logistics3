@@ -30,6 +30,9 @@
   "shipment",
   "container_no",
   "column_break_container",
+  "point_of_loading",
+  "cargo_details",
+  "section_break_container_return",
   "planned_depot",
   "depot",
   "depot_changed",
@@ -37,6 +40,9 @@
   "interchange_no",
   "interchange_date",
   "interchange_receipt",
+  "section_break_guarantee",
+  "guarantee_form",
+  "guarantee_form_details",
   "section_break_rev",
   "revenue",
   "section_break_driver_allowance",
@@ -213,15 +219,14 @@
   {
    "fieldname": "section_break_container",
    "fieldtype": "Section Break",
-   "label": "Empty Container Return",
-   "depends_on": "eval:doc.trip_type==\"Empty Return to Depot\""
+   "label": "Container Details"
   },
   {
    "fieldname": "shipment",
    "fieldtype": "Link",
    "label": "Shipment",
    "options": "Shipment",
-   "description": "Optional: link the Shipment this empty container belongs to, to auto-fill Container No."
+   "description": "Optional: link the Shipment this container belongs to, to auto-fill Container No."
   },
   {
    "fieldname": "container_no",
@@ -233,6 +238,26 @@
   {
    "fieldname": "column_break_container",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "point_of_loading",
+   "fieldtype": "Data",
+   "label": "Point of Loading",
+   "depends_on": "eval:doc.trip_type!=\"Empty Return to Depot\"",
+   "description": "Optional: where this container/cargo was loaded (port, depot, CFS or warehouse) before this trip departed."
+  },
+  {
+   "fieldname": "cargo_details",
+   "fieldtype": "Small Text",
+   "label": "Cargo Details",
+   "depends_on": "eval:doc.trip_type!=\"Empty Return to Depot\"",
+   "description": "Optional: description of the cargo/container contents being hauled on this trip."
+  },
+  {
+   "fieldname": "section_break_container_return",
+   "fieldtype": "Section Break",
+   "label": "Empty Container Return",
+   "depends_on": "eval:doc.trip_type==\"Empty Return to Depot\""
   },
   {
    "fieldname": "planned_depot",
@@ -284,7 +309,29 @@
    "fieldtype": "Attach",
    "label": "Interchange Receipt",
    "read_only": 1,
-   "description": "Optional: scanned/photographed copy of the interchange receipt issued by the depot/CFS confirming the empty container was accepted back."
+   "mandatory_depends_on": "eval:doc.trip_type==\"Empty Return to Depot\" && doc.offload_status==\"Offloaded\"",
+   "description": "Scanned/photographed copy of the interchange receipt issued by the depot/CFS confirming the empty container was accepted back. Required once this trip is marked Returned."
+  },
+  {
+   "fieldname": "section_break_guarantee",
+   "fieldtype": "Section Break",
+   "label": "Delivery Guarantee",
+   "depends_on": "eval:doc.trip_type!=\"Empty Return to Depot\" && doc.container_no"
+  },
+  {
+   "fieldname": "guarantee_form",
+   "fieldtype": "Attach",
+   "label": "Guarantee Form",
+   "read_only": 1,
+   "mandatory_depends_on": "eval:doc.trip_type!=\"Empty Return to Depot\" && doc.container_no && doc.offload_status==\"Offloaded\"",
+   "description": "Scanned/photographed copy of the container guarantee form, attached when this container is delivered. Required at offload once a Container No is set on this trip."
+  },
+  {
+   "fieldname": "guarantee_form_details",
+   "fieldtype": "Small Text",
+   "label": "Guarantee Form Details",
+   "read_only": 1,
+   "description": "Details captured from the guarantee form at delivery (e.g. guarantor, amount, validity, container condition)."
   },
   {
    "fieldname": "section_break_rev",

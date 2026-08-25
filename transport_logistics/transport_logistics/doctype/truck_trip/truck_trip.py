@@ -578,6 +578,8 @@ def validate_offload_data(doc, method=None):
 			missing.append("Actual Depot / Yard")
 		if not doc.interchange_no:
 			missing.append("Interchange Number")
+		if not doc.interchange_receipt:
+			missing.append("Interchange Receipt (attached file)")
 		if doc.depot_changed and not doc.depot_change_reason:
 			missing.append("Reason for Depot Change")
 	else:
@@ -587,6 +589,8 @@ def validate_offload_data(doc, method=None):
 			missing.append("Delivery Number")
 		if not doc.proof_of_delivery:
 			missing.append("Proof of Delivery (attached file)")
+		if doc.container_no and not doc.guarantee_form:
+			missing.append("Guarantee Form (attached file)")
 
 	if missing:
 		frappe.throw(
@@ -594,10 +598,11 @@ def validate_offload_data(doc, method=None):
 			+ ", ".join(missing)
 			+ (
 				". An Empty Return to Depot trip can only be confirmed returned once the "
-				"Depot / Yard and Interchange Number are captured."
+				"Depot / Yard, Interchange Number, and Interchange Receipt are captured."
 				if doc.trip_type == "Empty Return to Depot"
 				else ". A truck can only be confirmed offloaded at the client's premises once "
-				"the Delivery Number and signed Proof of Delivery are captured."
+				"the Delivery Number and signed Proof of Delivery are captured — and, for a "
+				"container (Container No set), the Guarantee Form as well."
 			)
 		)
 
@@ -732,6 +737,8 @@ def offload_truck(
 	offloaded_by=None,
 	delivery_number=None,
 	proof_of_delivery=None,
+	guarantee_form=None,
+	guarantee_form_details=None,
 ):
 	"""Records that the truck has offloaded at the client's premises: marks
 	the trip Completed and the truck available again. This is the mechanism
@@ -745,6 +752,12 @@ def offload_truck(
 	again at save time regardless of how this method is called. This only
 	captures the POD; it does NOT authenticate it — see authenticate_pod()
 	below, which is a deliberately separate, restricted action.
+
+	When this trip has a Container No set, a Guarantee Form (scanned/
+	photographed copy, with optional free-text details — guarantor, amount,
+	validity, container condition, etc.) is also required before the trip
+	can be marked Offloaded — see validate_offload_data() above, which
+	enforces this again at save time.
 
 	Loaded Haul trips only — see return_empty_container() below for the
 	Empty Return to Depot equivalent."""
@@ -781,6 +794,12 @@ def offload_truck(
 			"Error Log, or link a Delivery Note manually."
 		)
 
+	if doc.container_no and not guarantee_form:
+		frappe.throw(
+			f"This trip is delivering Container {doc.container_no} — a Guarantee Form must be "
+			"attached before it can be marked Offloaded."
+		)
+
 	doc.offload_status = "Offloaded"
 	doc.offload_datetime = now_datetime()
 	doc.offload_odometer = flt(offload_odometer)
@@ -789,11 +808,17 @@ def offload_truck(
 	doc.offloaded_by = offloaded_by
 	doc.delivery_number = delivery_number.strip()
 	doc.proof_of_delivery = proof_of_delivery
+	if guarantee_form:
+		doc.guarantee_form = guarantee_form
+	if guarantee_form_details:
+		doc.guarantee_form_details = guarantee_form_details
 	doc.status = "Completed"
 
 	doc.save(ignore_permissions=True)
 
 	_link_attachment(doc, proof_of_delivery, "proof_of_delivery")
+	if guarantee_form:
+		_link_attachment(doc, guarantee_form, "guarantee_form")
 
 	return doc.name
 
@@ -823,9 +848,10 @@ def return_empty_container(
 	flag_depot_change() and validate_offload_data() above enforce this
 	again at save time regardless of how this method is called.
 
-	interchange_receipt is an optional scanned/photographed copy of the
-	interchange receipt, attached the same way Proof of Delivery is on
-	offload_truck() below."""
+	interchange_receipt is a scanned/photographed copy of the interchange
+	receipt, attached the same way Proof of Delivery is on offload_truck()
+	below — required, since it's the actual documentary evidence behind
+	the Interchange Number entered above."""
 	if not offload_odometer:
 		frappe.throw("Odometer Reading at Return is required.")
 	if not offloaded_by:
@@ -836,6 +862,11 @@ def return_empty_container(
 		frappe.throw(
 			"Interchange Number is required — transcribe it from the interchange receipt "
 			"issued at the depot/CFS confirming the empty container was accepted back."
+		)
+	if not interchange_receipt:
+		frappe.throw(
+			"Interchange Receipt must be attached — a scanned/photographed copy of the "
+			"receipt issued at the depot/CFS confirming the empty container was accepted back."
 		)
 
 	doc = frappe.get_doc("Truck Trip", trip_name)
