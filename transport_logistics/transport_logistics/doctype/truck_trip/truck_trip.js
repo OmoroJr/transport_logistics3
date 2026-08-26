@@ -11,9 +11,13 @@ frappe.ui.form.on("Truck Trip", {
 		});
 
 		frm.set_query("delivery_note", () => {
-			const filters = { docstatus: 1 };
-			if (frm.doc.customer) filters.customer = frm.doc.customer;
-			return { filters };
+			return {
+				query: "transport_logistics.transport_logistics.doctype.truck_trip.truck_trip.delivery_note_query",
+				filters: {
+					sales_order: frm.doc.sales_order,
+					customer: frm.doc.customer,
+				},
+			};
 		});
 
 		frm.set_query("pre_trip_fuel_log", () => {
@@ -42,6 +46,25 @@ frappe.ui.form.on("Truck Trip", {
 					frm.set_value("sales_order", "");
 				}
 			});
+		}
+	},
+
+	sales_order(frm) {
+		// Changing Sales Order invalidates a previously-picked Delivery Note that isn't
+		// against the new one. Delivery Note is locked once the trip has been saved with
+		// one set (see validate_delivery_note_locked in truck_trip.py), so only worth
+		// checking while the trip is still new/unsaved.
+		if (frm.doc.delivery_note && frm.is_new()) {
+			frappe.db
+				.get_list("Delivery Note Item", {
+					filters: { parent: frm.doc.delivery_note, against_sales_order: frm.doc.sales_order || "" },
+					limit: 1,
+				})
+				.then((rows) => {
+					if (!rows || !rows.length) {
+						frm.set_value("delivery_note", "");
+					}
+				});
 		}
 	},
 

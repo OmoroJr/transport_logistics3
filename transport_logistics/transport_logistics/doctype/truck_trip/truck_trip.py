@@ -477,7 +477,7 @@ def validate_delivery_note_locked(doc, method=None):
 		return
 
 	dn = frappe.db.get_value(
-		"Delivery Note", doc.delivery_note, ["docstatus", "customer"], as_dict=True
+		"Delivery Note", doc.delivery_note, ["docstatus", "customer", "status"], as_dict=True
 	)
 	if not dn:
 		frappe.throw(f"Delivery Note {doc.delivery_note} not found.")
@@ -486,11 +486,27 @@ def validate_delivery_note_locked(doc, method=None):
 			f"Delivery Note {doc.delivery_note} must be submitted before it can be linked "
 			"to this trip — it isn't a real issued document until then."
 		)
+	if dn.status == "Completed":
+		frappe.throw(
+			f"Delivery Note {doc.delivery_note} is already Completed — it has already been "
+			"fully billed/closed out and can't be linked to a new trip."
+		)
 	if doc.customer and dn.customer and dn.customer != doc.customer:
 		frappe.throw(
 			f"Delivery Note {doc.delivery_note} is for customer {dn.customer}, which doesn't "
 			f"match this trip's customer ({doc.customer})."
 		)
+	if doc.sales_order:
+		against_this_so = frappe.db.exists(
+			"Delivery Note Item",
+			{"parent": doc.delivery_note, "against_sales_order": doc.sales_order},
+		)
+		if not against_this_so:
+			frappe.throw(
+				f"Delivery Note {doc.delivery_note} is not against this trip's Sales Order "
+				f"({doc.sales_order}). Link the Delivery Note that was raised against that "
+				"Sales Order, or clear Sales Order first."
+			)
 
 	existing = frappe.db.get_value(
 		"Truck Trip",
@@ -502,6 +518,46 @@ def validate_delivery_note_locked(doc, method=None):
 			f"Delivery Note {doc.delivery_note} is already linked to Truck Trip {existing}. "
 			"Each Delivery Note represents one consignment leaving with one trip."
 		)
+
+
+@frappe.whitelist()
+def delivery_note_query(doctype, txt, searchfield, start, page_len, filters):
+	"""Link query for the Delivery Note field on Truck Trip.
+
+	Excludes Delivery Notes that are already Completed (fully billed/closed
+	out — not available to attach to a new trip), and, once a Sales Order is
+	chosen on the trip, restricts the list to Delivery Notes actually raised
+	against that Sales Order (falling back to a plain Customer match if no
+	Sales Order is set yet). validate_delivery_note_locked() above enforces
+	the same rules again at save time, so this is purely about keeping the
+	picker list itself clean."""
+	filters = frappe.parse_json(filters) if isinstance(filters, str) else (filters or {})
+	sales_order = filters.get("sales_order")
+	customer = filters.get("customer")
+
+	conditions = ["dn.docstatus = 1", "dn.status != 'Completed'", "dn.name like %(txt)s"]
+	values = {"txt": f"%{txt}%", "start": start, "page_len": page_len}
+
+	if sales_order:
+		conditions.append(
+			"exists (select 1 from `tabDelivery Note Item` dni "
+			"where dni.parent = dn.name and dni.against_sales_order = %(sales_order)s)"
+		)
+		values["sales_order"] = sales_order
+	elif customer:
+		conditions.append("dn.customer = %(customer)s")
+		values["customer"] = customer
+
+	return frappe.db.sql(
+		f"""
+		select dn.name, dn.customer
+		from `tabDelivery Note` dn
+		where {" and ".join(conditions)}
+		order by dn.modified desc
+		limit %(page_len)s offset %(start)s
+		""",
+		values,
+	)
 
 
 def set_planned_depot(doc, method=None):
