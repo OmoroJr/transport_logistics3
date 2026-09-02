@@ -182,7 +182,7 @@
   {
    "label": "Payments & Reports",
    "type": "Card Break",
-   "link_count": 20
+   "link_count": 27
   },
   {
    "label": "Vehicle Booking Register",
@@ -322,6 +322,55 @@
    "type": "Link",
    "link_type": "Report",
    "link_to": "Truck Fleet Status",
+   "is_query_report": 1
+  },
+  {
+   "label": "Shipment Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Shipment Register",
+   "is_query_report": 1
+  },
+  {
+   "label": "Accident Report Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Accident Report Register",
+   "is_query_report": 1
+  },
+  {
+   "label": "Highway Breakdown Analysis",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Highway Breakdown Analysis",
+   "is_query_report": 1
+  },
+  {
+   "label": "Driver Mileage Payment Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Driver Mileage Payment Register",
+   "is_query_report": 1
+  },
+  {
+   "label": "Fuel Tank Reconciliation",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Fuel Tank Reconciliation",
+   "is_query_report": 1
+  },
+  {
+   "label": "Tyre Lifecycle Report",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Tyre Lifecycle Report",
+   "is_query_report": 1
+  },
+  {
+   "label": "Trailer Coupling Register",
+   "type": "Link",
+   "link_type": "Report",
+   "link_to": "Trailer Coupling Register",
    "is_query_report": 1
   },
   {
